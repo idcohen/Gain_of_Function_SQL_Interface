@@ -6,3 +6,5 @@
 - IBM Gen AI Example Code Repository https://github.com/IBM/ibm-generative-ai/tree/main
 
 - Langchain https://python.langchain.com/docs/get_started/introduction
+
+- Open AI Cookbook https://github.com/openai/openai-cookbook/blob/main/README.md
