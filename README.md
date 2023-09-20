@@ -8,3 +8,6 @@
 - Langchain https://python.langchain.com/docs/get_started/introduction
 
 - Open AI Cookbook https://github.com/openai/openai-cookbook/blob/main/README.md
+
+### Open AI API
+Chat Completions API https://platform.openai.com/docs/guides/gpt/chat-completions-api
