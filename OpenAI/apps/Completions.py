@@ -27,8 +27,8 @@ def Instantiate_OpenAI_Class():
     Token_Cost = {"gpt-3.5-turbo-instruct":{"Input":0.0015/1000,"Output":0.002/1000}}
 
     #Instantiate GenAI_NL2SQL Object
-    return GenAI_NL2SQL(OPENAI_API_KEY, Model, Encoding_Base, Max_Tokens, Temperature, Token_Cost,\
-                         DB, MYSQL_USER, MYSQL_PWD)
+    return GenAI_NL2SQL(OPENAI_API_KEY, Model, Encoding_Base, Max_Tokens, Temperature, \
+                        Token_Cost,DB, MYSQL_USER, MYSQL_PWD)
 
 
 
@@ -48,7 +48,8 @@ def main():
 
     Prompt_Template = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
     Correction_Prompt_Template = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
-    Query = GPT3.GPT_Completion(Question, Prompt_Template, Correction_Prompt_Template, Verbose=True, QueryDB = True)
+    Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=True, \
+                                Max_Iterations=2, Verbose=True, QueryDB = True)
 
     return 0
 
