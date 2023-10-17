@@ -47,8 +47,9 @@ def main():
     Question = input('Prompt> Question: ')
 
     Prompt_Template = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
-    Correction_Prompt_Template = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
-    Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=True, \
+    Correction_Prompt = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
+    Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=True,  \
+                                Correction_Prompt= Correction_Prompt, \
                                 Max_Iterations=2, Verbose=True, QueryDB = True)
 
     return 0
