@@ -12,7 +12,7 @@ sys.path.append(r"/Users/dovcohen/Documents/Projects/AI/NL2SQL")
 from OpenAI.NL2SQL.lib_OpenAI import GenAI_NL2SQL
 
 def Instantiate_OpenAI_Class():
-    load_dotenv("/Users/dovcohen/.env")
+    load_dotenv("/Users/dovcohen/.NL2SQL_env")
     # SQL DB
     DB = 'mysql'
     MYSQL_USER = os.getenv("MYSQL_USER", None)
