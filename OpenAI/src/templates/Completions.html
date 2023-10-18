@@ -1,0 +1,23 @@
+<!-- templates/fapp.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Natural Language 2 SQL via OpenAI Completion API</title>
+</head>
+<body>
+    <h1>Enter Question</h1>
+    <form method="POST">
+        <label for="Question">i:</label>
+        <input type="text" name="Question" id="Question"><br>
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+    <br>
+    {% if Question %}
+        <h2>Results:</h2>
+        <br>
+        <p>Question = {{ Question }}</p>
+        <p>Query = {{ Query }}</p>
+    {% endif %}
+</body>
+</html>

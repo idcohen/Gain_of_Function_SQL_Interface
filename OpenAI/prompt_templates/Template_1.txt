@@ -17,7 +17,11 @@ When asked about account types, use the "type" field in the product table.
 When asked about a client id, use the "id" field in the client table.
 When asked about a clients who share a household, join the "client" table with "HH" table.
 When asked for the full or complete address, return "address, city, state and zip" from the address table.
-
+when asked to return the count of accounts, 
+    use the following syntax for open accounts
+        sum(case when account.status = 'Open' then 1 else 0 end) 
+    use the following syntax for closed accounts
+        sum(case when account.status = 'Closed' then 1 else 0 end) 
 Never use First_Name and Last_Name when querying the client table.
 
 When asked for portfolio summary, return account type, number of open accounts, number of closed accounts, total balances,

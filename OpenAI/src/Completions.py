@@ -1,11 +1,13 @@
 import os
 import getpass
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 import pandas as pd
+import argparse
 import openai
 
 # for local modules
 import sys
+
 sys.path.append(r"/Users/dovcohen/Documents/Projects/AI/NL2SQL")
 from OpenAI.lib.lib_OpenAI import GenAI_NL2SQL
 
@@ -32,27 +34,40 @@ def Instantiate_OpenAI_Class():
 
 
 
-def main():
+def main(Question=None):
     GPT3 = Instantiate_OpenAI_Class()
 
     #txt = "Hello World"
     #GPT3.Encoding(txt, Verbose=True)
     #GPT3.Decoding(Verbose=True)
 
-    Prompt_Template_File = r"OpenAI/prompt_templates/Template_1.txt"
-    Correction_Prompt_File = r"OpenAI/prompt_templates/Correction_Template.txt"
-    print(f'LLM Natural Language to SQL translator')
-    print(f'Using {GPT3._Model} set at temperature {GPT3._Temperature} \n')
-
-    Question = input('Prompt> Question: ')
+    # 
+    Prompt_Template_File = f"../prompt_templates/Template_1.txt"
+    Correction_Prompt_File = r"../prompt_templates/Correction_Template.txt"
 
     Prompt_Template = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
     Correction_Prompt = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
+    print(f'LLM Natural Language to SQL translator')
+    print(f'Using {GPT3._Model} set at temperature {GPT3._Temperature} \n')
+
+    if Question is None:
+       Question = input('Prompt> Question: ')
+
     Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=True,  \
                                 Correction_Prompt= Correction_Prompt, \
-                                Max_Iterations=2, Verbose=True, QueryDB = True)
-
-    return 0
+                                Max_Iterations=2, Verbose=False, QueryDB = True)
+    return(Query)
 
 if __name__ == '__main__':
-    main()
+    p = argparse.ArgumentParser('Natural Language to SQL')
+    p.add_argument('-q', action='store_true', help='Question flag', default='False')
+    p.add_argument('Question', type=str, nargs=1, \
+                    help='Question to pass to LLM')
+    args = p.parse_args()
+
+    if args.q:
+
+        Question = args.Question[0]
+        print(Question)
+        Query =  main(Question)
+       # print(Query)
