@@ -9,7 +9,7 @@ import openai
 import sys
 
 sys.path.append(r"/Users/dovcohen/Documents/Projects/AI/NL2SQL")
-from OpenAI.lib.lib_OpenAI import GenAI_NL2SQL
+from OpenAI.NL2SQL.lib_OpenAI import GenAI_NL2SQL
 
 def Instantiate_OpenAI_Class():
     load_dotenv("/Users/dovcohen/.env")
