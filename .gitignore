@@ -164,3 +164,4 @@ cython_debug/
 #.idea/
 OpenAI/NL2SQL/.DS_Store
 OpenAI/.DS_Store
+.DS_Store

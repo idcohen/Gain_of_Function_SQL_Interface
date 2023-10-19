@@ -83,7 +83,10 @@ class GenAI_NL2SQL():
             model=self._Model,
             prompt=Prompt,
             max_tokens=self._Max_Tokens,
-            temperature=self._Temperature
+            temperature=self._Temperature,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
         )
         return(Response)
 
