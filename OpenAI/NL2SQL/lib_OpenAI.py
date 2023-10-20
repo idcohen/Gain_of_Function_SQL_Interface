@@ -2,7 +2,6 @@ import os
 import getpass
 from dotenv import load_dotenv, dotenv_values
 import pandas as pd
-import openai
 
 from IPython.display import display, Markdown, Latex, HTML, JSON
 import sqlite3
@@ -21,6 +20,9 @@ from pyexpat.errors import messages
 
 import openai
 import tiktoken
+
+## Embeddings
+from openai.embeddings_utils import get_embedding
 
 class GenAI_NL2SQL():
     def __init__(self, OPENAI_API_KEY, Model, Encoding_Base, Max_Tokens, Temperature, \
@@ -68,6 +70,12 @@ class GenAI_NL2SQL():
             Cost['Output']*Response['usage']['completion_tokens']
         return(Total_Cost, Response['usage']['total_tokens'])
 
+
+    def OpenAI_Embeddings_Cost(self, Response):
+        Cost = self._Token_Cost[self._Model]  # cost per 1K tokens
+        Total_Cost = Cost['Input']*Response['usage']['total_tokens'] 
+        return(Total_Cost, Response['usage']['total_tokens'])
+    
   ##############################################################################  
     def Prompt_Question(self, _Prompt_Template_, Inputs):
         """
@@ -79,7 +87,9 @@ class GenAI_NL2SQL():
 
 ##############################################################################
     def OpenAI_Completion(self, Prompt):
-        Response = openai.Completion.create(
+        try:
+            #Make your OpenAI API request here
+            response = openai.Completion.create(
             model=self._Model,
             prompt=Prompt,
             max_tokens=self._Max_Tokens,
@@ -87,8 +97,20 @@ class GenAI_NL2SQL():
             top_p=1,
             frequency_penalty=0,
             presence_penalty=0
-        )
-        return(Response)
+            )
+        except openai.error.APIError as e:
+            #Handle API error here, e.g. retry or log
+            print(f"OpenAI API returned an API Error: {e}")
+            return -1
+        except openai.error.APIConnectionError as e:
+            #Handle connection error here
+            print(f"Failed to connect to OpenAI API: {e}")
+            return -1
+        except openai.error.RateLimitError as e:
+            #Handle rate limit error (we recommend using exponential backoff)
+            print(f"OpenAI API request exceeded rate limit: {e}")
+            return -1
+        return(response)
 
 #############################################################################
     def OpenAI_Text_Extraction(self, Response, Type='SQL'):
@@ -256,4 +278,37 @@ class GenAI_NL2SQL():
         chain = LLMChain(llm=self._LLM, prompt=Prompt)
         return chain.run(Input) 
     
+#############################################################################
+# OpenAI Embeddings - returns list
+    def OpenAI_Get_Embedding(self, Text=None, Verbose=False):
+        # replace line return
+        if Text is not None:
+            Text = Text.replace("\n", " ")
+            # check if tokens is under max tokens for model
+            ntokens = self.Num_Tokens_From_String(Text)
+            if ntokens < self._Max_Tokens:  
+                try:
+                    #Make your OpenAI API request here
+                    response= openai.Embedding.create(input=Text,model=self._Model)
+                except openai.error.APIError as e:
+                    #Handle API error here, e.g. retry or log
+                    print(f"OpenAI API returned an API Error: {e}")
+                    return [],-1
+                except openai.error.APIConnectionError as e:
+                    #Handle connection error here
+                    print(f"Failed to connect to OpenAI API: {e}")
+                    return [],-1
+                except openai.error.RateLimitError as e:
+                    #Handle rate limit error (we recommend using exponential backoff)
+                    print(f"OpenAI API request exceeded rate limit: {e}")
+                    return [],-1
+                
+                embeddings = response['data'][0]['embedding']
+                cost, tokens = self.OpenAI_Embeddings_Cost(response)
+                if Verbose:
+                    print(f'Embeddings Cost {cost} and tokens {tokens}')
+                return embeddings,0
 
+
+
+#df["embedding"] = df.combined.apply(lambda x: get_embedding(x, engine=embedding_model))
