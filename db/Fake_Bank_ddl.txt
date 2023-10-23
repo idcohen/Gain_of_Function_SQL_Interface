@@ -1,0 +1,154 @@
+create_table_client= """
+    CREATE TABLE if not exists client
+    (
+        ID integer PRIMARY KEY,
+        Client_ID integer not null,
+        HH_ID integer not null,
+        Person_Org varchar(128) not null,
+        Name varchar(128)not null,
+        FirstName varchar(128) ,
+        LastName varchar(128) ,
+        SSN varchar(128),
+        Address_ID integer not null,
+        Banker_ID integer not null,
+        Employer_ID integer not null,
+        Open_Dt date not null,
+        Start_Dt date not null,
+        End_Dt date not null,
+        Is_Current integer not null,
+        FOREIGN KEY(Address_ID) REFERENCES address(ID),
+        FOREIGN KEY(Banker_ID) REFERENCES banker(ID),
+        FOREIGN KEY(HH_ID) REFERENCES HH(ID),
+        FOREIGN KEY(Employer_ID) REFERENCES employer(ID)
+    
+    ); """
+    
+    create_table_address = """
+    create table if not exists address
+    (
+        ID integer primary key,
+        Address varchar(128),
+        City varchar(128),
+        State varchar(128),
+        Zip varchar(128),
+        Start_Dt date not null,
+        End_Dt date not null,
+        Is_Current integer not null
+    )
+    """
+         
+    create_table_HH = """
+    create table if not exists HH
+    (
+        ID integer PRIMARY KEY,
+        Person_Org varchar(128) not null,
+        Name varchar(128) not null,
+        FirstName varchar(128) ,
+        LastName varchar(128) ,
+        Address_ID integer not null,
+        Banker_ID integer not null,
+        Open_Dt date not null,
+        Start_Dt date not null,
+        End_Dt date not null,
+        Is_Current integer not null,
+        FOREIGN KEY(Address_ID) REFERENCES address(ID),
+        FOREIGN KEY(Banker_ID) REFERENCES banker(ID)
+    )
+    """
+         
+    create_table_employer = """
+    create table if not exists employer
+    (
+        ID integer primary key,
+        Name varchar(128),
+        Address_ID integer not null,
+        Client_ID integer,
+        Industry varchar(128),
+        Start_Dt date not null,
+        End_Dt date not null,
+        Is_Current integer not null,
+        FOREIGN KEY(Address_ID) REFERENCES address(ID)
+    )
+    """
+         
+    create_table_product = """
+    create table if not exists product
+    (
+        ID integer primary key,
+        Type varchar(128) not null,
+        Name varchar(128) not null,
+        Start_Dt date not null,
+        End_Dt date not null,
+        Is_Current integer not null
+    )
+    """
+         
+    create_table_banker = """
+    create table if not exists banker
+    (
+        ID integer primary key,
+        Name varchar(128) not null,
+        FirstName  varchar(128) not null,
+        LastName varchar(128) not null,
+        Start_Dt date not null,
+        End_Dt date not null,
+        Is_Current integer not null
+    )
+    """
+    create_table_account = """
+    create table if not exists account
+    (
+        ID integer primary key,
+        acct_nbr varchar(128) not null,
+        Product_ID integer not null,
+        Banker_ID integer not null,
+        Status varchar(128) not null,
+        Open_Dt date not null,
+        Close_Dt date,
+        Start_Dt date not null,
+        End_Dt date not null,
+        Is_Current integer not null,
+        FOREIGN KEY(Product_ID) REFERENCES Product(ID),
+        FOREIGN KEY(Banker_ID) REFERENCES banker(ID)   
+    )
+    """
+         
+    create_table_relationship = """
+    create table if not exists relationship
+    (
+        ID integer primary key,
+        Account_ID integer not null,
+        Client_ID integer not null,
+        Relationship_Type varchar(128) not null,
+        Start_Dt date not null,
+        End_Dt date not null,
+        Is_Current integer not null,
+        FOREIGN KEY(Account_ID) REFERENCES account(ID),
+        FOREIGN KEY(Client_ID) REFERENCES client(ID)
+    )
+    """
+         
+    create_table_balance = """
+    create table if not exists balance
+    (
+        ID integer primary key,
+        Account_ID integer not null,
+        Balance real not null,
+        Balance_Dt_Id integer not null,
+        FOREIGN KEY(Account_ID) REFERENCES account(ID),
+        FOREIGN KEY(Balance_Dt_Id) REFERENCES date(ID)
+    )
+    """
+         
+    create_table_date = """
+    create table if not exists date
+    (
+        ID integer primary key,
+        Date date not null,
+        Julian_Dt integer not null,
+        Month integer not null,
+        Day integer not null,
+        Year integer not null,
+        Quarter integer not null
+    )
+    """
