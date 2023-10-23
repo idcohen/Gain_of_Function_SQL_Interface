@@ -80,7 +80,6 @@ class GenAI_NL2SQL():
     def Prompt_Question(self, _Prompt_Template_, Inputs):
         """
         """
-    #    print(f'Inputs {Inputs}')
         for i,j in Inputs.items():
             Prompt = _Prompt_Template_.replace(i,j)
         return Prompt
@@ -257,10 +256,12 @@ class GenAI_NL2SQL():
             try:
                 with open(File, 'r') as file:
                     Template = file.read().replace('\n', '')
+                    Status = 0
             except:
                 print(f'Prompt file {File} load failed ')
-                return 0
-        return Template
+                Status = -1
+                return  "", Status
+        return Template, Status
 
 
 #############################################################################
@@ -293,21 +294,21 @@ class GenAI_NL2SQL():
                 except openai.error.APIError as e:
                     #Handle API error here, e.g. retry or log
                     print(f"OpenAI API returned an API Error: {e}")
-                    return [],-1
+                    return []
                 except openai.error.APIConnectionError as e:
                     #Handle connection error here
                     print(f"Failed to connect to OpenAI API: {e}")
-                    return [],-1
+                    return []
                 except openai.error.RateLimitError as e:
                     #Handle rate limit error (we recommend using exponential backoff)
                     print(f"OpenAI API request exceeded rate limit: {e}")
-                    return [],-1
+                    return []
                 
                 embeddings = response['data'][0]['embedding']
                 cost, tokens = self.OpenAI_Embeddings_Cost(response)
                 if Verbose:
                     print(f'Embeddings Cost {cost} and tokens {tokens}')
-                return embeddings,0
+                return embeddings
 
 
 
