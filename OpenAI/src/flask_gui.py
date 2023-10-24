@@ -10,10 +10,12 @@ def index():
         Question = request.form['Question']
         
         # Call the print_ij.py script with i and j as arguments
-        result = subprocess.check_output(['python', '../src/Completions.py', Question]).decode('utf-8')
+        result = subprocess.check_output(['python', 'Completions.py -q', Question]).decode('utf-8')
         Query = result.strip().split(',')
         return render_template('Completions.html', Question, Query)
     return render_template('Completions.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+    
