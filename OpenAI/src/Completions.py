@@ -28,7 +28,7 @@ def Instantiate_OpenAI_Class():
     Temperature = 0
     Token_Cost = {"gpt-3.5-turbo-instruct":{"Input":0.0015/1000,"Output":0.002/1000}}
     VDSDB = "Dataframe"
-    VDSDB_Filename = "../Vector_DB/Load_VDS_DF.xlsx"
+    VDSDB_Filename = "../NL2SQL/Vector_DB/Question_Query_Embeddings.xlsx"
 
     #Instantiate GenAI_NL2SQL Object
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Encoding_Base, Max_Tokens, Temperature, \
