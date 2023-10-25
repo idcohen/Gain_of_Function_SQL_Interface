@@ -27,12 +27,12 @@ def Instantiate_OpenAI_Class():
     Max_Tokens = 250
     Temperature = 0
     Token_Cost = {"gpt-3.5-turbo-instruct":{"Input":0.0015/1000,"Output":0.002/1000}}
+    VDSDB = "Dataframe"
+    VDSDB_Filename = "../Vector_DB/Load_VDS_DF.xlsx"
 
     #Instantiate GenAI_NL2SQL Object
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Encoding_Base, Max_Tokens, Temperature, \
-                        Token_Cost,DB, MYSQL_USER, MYSQL_PWD)
-
-
+                        Token_Cost,DB, MYSQL_USER, MYSQL_PWD, VDSDB, VDSDB_Filename)
 
 def main(Question=None):
     GPT3 = Instantiate_OpenAI_Class()
@@ -49,7 +49,8 @@ def main(Question=None):
     if status != 0:
         print(f'{Prompt_Template_File } failed to load')
         return ""
-    Correction_Prompt, status  = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
+    
+    Correction_Prompt, status = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
     if status != 0:
         print(f'{Correction_Prompt_File } failed to load')
         return ""
@@ -72,8 +73,8 @@ if __name__ == '__main__':
                     help='Question to pass to LLM')
     args = p.parse_args()
 
-    if args.q:
-
+    print(args.q)
+    if args.q == True:
         Question = args.Question[0]
         print(Question)
         Query =  main(Question)

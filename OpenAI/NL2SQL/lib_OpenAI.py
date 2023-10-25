@@ -24,9 +24,12 @@ import tiktoken
 ## Embeddings
 from openai.embeddings_utils import get_embedding
 
+## Vector Datastore
+from OpenAI.NL2SQL.lib_Vector_Datastore import VDS
+
 class GenAI_NL2SQL():
     def __init__(self, OPENAI_API_KEY, Model, Encoding_Base, Max_Tokens, Temperature, \
-                  Token_Cost, DB, MYSQL_User, MYSQL_PWD):
+                  Token_Cost, DB, MYSQL_User, MYSQL_PWD, VDSDB, VDSDB_Filename):
         self._Model = Model
         self._Encoding_Base = Encoding_Base
         self._Max_Tokens = Max_Tokens
@@ -37,6 +40,8 @@ class GenAI_NL2SQL():
         self._MYSQL_User=MYSQL_User 
         self._MYSQL_PWD=MYSQL_PWD
         self.Set_OpenAI_API_Key()
+        self._VDSDB = VDSDB
+        self._VDS = VDS(VDSDB_Filename)
 
     def Set_OpenAI_API_Key(self):
         openai.api_key = self._OpenAI_API_Key
@@ -181,6 +186,9 @@ class GenAI_NL2SQL():
     def Prompt_Query(self, Prompt_Template, Question, Verbose):
         status = 0
         df = pd.DataFrame()
+
+        # Vector Datastore
+        rtn = self._VDS.Load_VDS_DF()
 
         # Construct prompt
         Prompt = self.Prompt_Question(Prompt_Template,{'{Question}':Question})
