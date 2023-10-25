@@ -187,9 +187,6 @@ class GenAI_NL2SQL():
         status = 0
         df = pd.DataFrame()
 
-        # Vector Datastore
-        rtn = self._VDS.Load_VDS_DF()
-
         # Construct prompt
         Prompt = self.Prompt_Question(Prompt_Template,{'{Question}':Question})
         # Estimate input prompt cost
@@ -218,10 +215,19 @@ class GenAI_NL2SQL():
                        Max_Iterations=0,Verbose=False, QueryDB = False):
     
         Correct_Query_Iterations = 0
+
+    # Load Vector Datastore
+        rtn = self._VDS.Load_VDS_DF()
+
+    ### Retrieve Question Embeddings
+    ### Search Vector Datastore for similar questions
+
+    ### Then feed output to Prompt
     
     # Construct prompt
         Prompt = self.Prompt_Question(Prompt_Template,{'{Question}':Question})
         Query = self.Prompt_Query(Prompt_Template, Question, Verbose=True)
+
         
     # Test query the DB - 
         if QueryDB:
