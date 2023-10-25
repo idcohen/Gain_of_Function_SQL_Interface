@@ -310,6 +310,4 @@ class GenAI_NL2SQL():
                     print(f'Embeddings Cost {cost} and tokens {tokens}')
                 return embeddings
 
-
-
 #df["embedding"] = df.combined.apply(lambda x: get_embedding(x, engine=embedding_model))
