@@ -42,7 +42,7 @@ def main(Question=None):
     #GPT3.Decoding(Verbose=True)
 
     # 
-    Prompt_Template_File = f"../prompt_templates/Template_1.txt"
+    Prompt_Template_File = f"../prompt_templates/Template_2.txt"
     Correction_Prompt_File = r"../prompt_templates/Correction_Template.txt"
 
     Prompt_Template, status = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
@@ -61,7 +61,7 @@ def main(Question=None):
     if Question is None:
         Question = input('Prompt> Question: ')
 
-    Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=True,  \
+    Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=False,  \
                                 Correction_Prompt= Correction_Prompt, \
                                 Max_Iterations=2, Verbose=False, QueryDB = True)
     return(Query)

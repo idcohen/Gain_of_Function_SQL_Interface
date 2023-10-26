@@ -118,11 +118,19 @@ class GenAI_NL2SQL():
 
 #############################################################################
     def OpenAI_Text_Extraction(self, Response, Type='SQL'):
+        print('OTE {Type}')
         if Type == 'SQL':
-            Txt = Response['choices'][0]['text']
+            ## Call prompt that removes extraneaous characters from the returned query
+            Prompt_Template, status =  self.Load_Prompt_Template('../prompt_templates/OpenAI_SQL_Extraction.txt')
+            if status == 0:
+                Prompt = self.Prompt_Question(Prompt_Template, Inputs={'{RESPONSE}':str(Response)})
+                Rtn = self.OpenAI_Completion(Prompt)
+                Txt = str(Rtn['choices'][0]['text'])
+        elif Type == 'Text':
+            Txt = str(Response['choices'][0]['text'])
         else:
             print(f'Type: {Type} is Unsupported ')
-            txt = ''
+            Txt = ''
         return(Txt)
 
 ##############################################################################
@@ -174,7 +182,9 @@ class GenAI_NL2SQL():
                     df = pd.read_sql_query(con=Conn.connect(),sql=sql_text(Query))
                     return status, df
                 except :
-                    print('read_sql_query error - mysql')
+                    print('read_sql_query error - MySQL')
+                    print(f'Query {sql_text(Query)}' )
+                    print(f'returned message {df}')
                     status = -5
                     return status, df
             else:
@@ -183,7 +193,7 @@ class GenAI_NL2SQL():
                 return status, df
 
 ##############################################################################    
-    def Prompt_Query(self, Prompt_Template, Question, Verbose):
+    def Prompt_Query(self, Prompt_Template, Question = '', Verbose=False, Debug=False):
         status = 0
         df = pd.DataFrame()
 
@@ -197,6 +207,9 @@ class GenAI_NL2SQL():
     
     # Send prompt to LLM
         Response = self.OpenAI_Completion(Prompt)
+        if Debug:
+            print(f'Prompt: \n',Prompt,'\n')
+            print('Response \n',Response,'\n')
         Cost, Tokens_Used  = self.OpenAI_Usage_Cost(Response)
         if Verbose:
             print('Output')  
@@ -223,16 +236,17 @@ class GenAI_NL2SQL():
     ### Search Vector Datastore for similar questions
 
     ### Then feed output to Prompt
-    
+
     # Construct prompt
-        Prompt = self.Prompt_Question(Prompt_Template,{'{Question}':Question})
+    #    Prompt = self.Prompt_Question(Prompt_Template,{'{Question}':Question})
         Query = self.Prompt_Query(Prompt_Template, Question, Verbose=True)
 
-        
+        print(f'Query initial round: {Query[0]}','\n')
     # Test query the DB - 
         if QueryDB:
             status, df = self.run_query(Query = Query, DB=self._DB)
-
+            print(f'Status {status}')
+            print(f'Counter {Correct_Query_Iterations}')
             # if query was malformed, llm halucianated for example
             if Correct_Query and (status == -5):
                 while (status == -5) and (Correct_Query_Iterations < Max_Iterations): 

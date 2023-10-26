@@ -10,3 +10,11 @@ class VDS():
         print('Here')
         print(df)
         return df
+
+#### Embeddings
+# OpenAI
+    def Initialize_OpenAI_Embedding_API(self):
+        self._Embedding_Function = embedding_functions.OpenAIEmbeddingFunction(
+                api_key="YOUR_API_KEY",
+                model_name="text-embedding-ada-002"
+            )
