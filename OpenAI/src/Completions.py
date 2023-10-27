@@ -9,7 +9,8 @@ import openai
 import sys
 
 sys.path.append(r"/Users/dovcohen/Documents/Projects/AI/NL2SQL")
-from OpenAI.NL2SQL.lib_OpenAI import GenAI_NL2SQL
+from OpenAI.src.lib.lib_OpenAI import GenAI_NL2SQL 
+from OpenAI.src.lib.lib_Vector_Datastore import VDS
 
 def Instantiate_OpenAI_Class():
     load_dotenv("/Users/dovcohen/.NL2SQL_env")
@@ -23,15 +24,16 @@ def Instantiate_OpenAI_Class():
 
     # LLM parameters
     Model = "gpt-3.5-turbo-instruct"
+    Embedding_Model = "text-embedding-ada-002"
     Encoding_Base = "cl100k_base"
     Max_Tokens = 250
     Temperature = 0
     Token_Cost = {"gpt-3.5-turbo-instruct":{"Input":0.0015/1000,"Output":0.002/1000}}
     VDSDB = "Dataframe"
-    VDSDB_Filename = "../NL2SQL/Vector_DB/Question_Query_Embeddings.xlsx"
+    VDSDB_Filename = "../Vector_DB/Question_Query_Embeddings.xlsx"
 
     #Instantiate GenAI_NL2SQL Object
-    return GenAI_NL2SQL(OPENAI_API_KEY, Model, Encoding_Base, Max_Tokens, Temperature, \
+    return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
                         Token_Cost,DB, MYSQL_USER, MYSQL_PWD, VDSDB, VDSDB_Filename)
 
 def main(Question=None):
