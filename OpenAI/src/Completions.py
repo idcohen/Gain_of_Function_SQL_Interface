@@ -3,7 +3,6 @@ import getpass
 from dotenv import load_dotenv
 import pandas as pd
 import argparse
-import openai
 
 # for local modules
 import sys
