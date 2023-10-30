@@ -171,7 +171,7 @@ class GenAI_NL2SQL():
                 print(f'Add results to Vector Datastore DB? Y or N')
                 rtn = input('Prompt> Question: ')
             if rtn == 'Y':
-                self.Insert_VDS(Question, Query, Question_Emb)
+                self.Insert_VDS(Question=Question, Query=Query, Metadata='', Embedding=Question_Emb)
     # Return Query
         return Query
 

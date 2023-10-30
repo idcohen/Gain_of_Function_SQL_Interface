@@ -8,8 +8,8 @@ import argparse
 import sys
 
 sys.path.append(r"/Users/dovcohen/Documents/Projects/AI/NL2SQL")
-from OpenAI.src.lib.lib_OpenAI import GenAI_NL2SQL 
-from OpenAI.src.lib.lib_Vector_Datastore import VDS
+from ChatGPT.src.lib.lib_OpenAI import GenAI_NL2SQL 
+from ChatGPT.src.lib.lib_Vector_Datastore import VDS
 
 def Instantiate_OpenAI_Class():
     load_dotenv("/Users/dovcohen/.NL2SQL_env")
@@ -71,7 +71,6 @@ if __name__ == '__main__':
                     help='Question to pass to LLM')
     args = p.parse_args()
 
-    print(args.q)
     if args.q == True:
         Question = args.Question[0]
         print(Question)
