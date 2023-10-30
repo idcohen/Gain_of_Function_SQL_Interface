@@ -147,7 +147,6 @@ class GenAI_NL2SQL():
         Question_Emb = self._VDS.OpenAI_Get_Embedding(Text=Question, Verbose=True)
 
     # Construct prompt
-    #    Prompt = self.Prompt_Question(Prompt_Template,{'{Question}':Question})
         if Verbose:
             print('Call Prompt_Query')
         Query = self.Prompt_Query(Prompt_Template, Question, Verbose=True)
@@ -172,7 +171,7 @@ class GenAI_NL2SQL():
                 print(f'Add results to Vector Datastore DB? Y or N')
                 rtn = input('Prompt> Question: ')
             if rtn == 'Y':
-                self.Insert_VDS(Question, Query, Embedding)
+                self.Insert_VDS(Question, Query, Question_Emb)
     # Return Query
         return Query
 
