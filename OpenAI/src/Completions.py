@@ -27,7 +27,9 @@ def Instantiate_OpenAI_Class():
     Encoding_Base = "cl100k_base"
     Max_Tokens = 250
     Temperature = 0
-    Token_Cost = {"gpt-3.5-turbo-instruct":{"Input":0.0015/1000,"Output":0.002/1000}}
+    Token_Cost = {"gpt-3.5-turbo-instruct":{"Input":0.0015/1000,"Output":0.002/1000},
+                  "text-embedding-ada-002":{"Input":0.0001/1000, "Output":0.0001/1000}}
+    
     VDSDB = "Dataframe"
     VDSDB_Filename = "../Vector_DB/Question_Query_Embeddings.xlsx"
 
@@ -37,11 +39,6 @@ def Instantiate_OpenAI_Class():
 
 def main(Question=None):
     GPT3 = Instantiate_OpenAI_Class()
-
-    #txt = "Hello World"
-    #GPT3.Encoding(txt, Verbose=True)
-    #GPT3.Decoding(Verbose=True)
-
     # 
     Prompt_Template_File = f"../prompt_templates/Template_2.txt"
     Correction_Prompt_File = r"../prompt_templates/Correction_Template.txt"
@@ -57,7 +54,7 @@ def main(Question=None):
         return ""
 
     print(f'LLM Natural Language to SQL translator')
-    print(f'Using {GPT3._Model} set at temperature {GPT3._Temperature} \n')
+    print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
 
     if Question is None:
         Question = input('Prompt> Question: ')
@@ -80,3 +77,8 @@ if __name__ == '__main__':
         print(Question)
         Query =  main(Question)
        # print(Query)
+
+
+    #txt = "Hello World"
+    #GPT3.Encoding(txt, Verbose=True)
+    #GPT3.Decoding(Verbose=True)
