@@ -18,12 +18,12 @@ import openai
 import tiktoken
 sys.path.append(r"/Users/dovcohen/Documents/Projects/AI/NL2SQL")
 #from .OpenAI_Func import Num_Tokens_From_String, OpenAI_Embeddings_Cost
-from OpenAI.src.lib.OpenAI_Func import Num_Tokens_From_String, OpenAI_Embeddings_Cost
-from OpenAI.src.lib.DB_Func import execute_query, run_query
-from OpenAI.src.lib.OpenAI_Func import Prompt_Cost, OpenAI_Usage_Cost
+from ChatGPT.src.lib.OpenAI_Func import Num_Tokens_From_String, OpenAI_Embeddings_Cost
+from ChatGPT.src.lib.DB_Func import run_query
+from ChatGPT.src.lib.OpenAI_Func import Prompt_Cost, OpenAI_Usage_Cost
 
 ## Vector Datastore
-from OpenAI.src.lib.lib_OpenAI_Embeddings import VDS, OpenAI_Embeddings
+from ChatGPT.src.lib.lib_OpenAI_Embeddings import VDS, OpenAI_Embeddings
 
 class GenAI_NL2SQL():
     def __init__(self, OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
