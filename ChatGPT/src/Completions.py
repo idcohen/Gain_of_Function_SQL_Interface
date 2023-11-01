@@ -37,45 +37,56 @@ def Instantiate_OpenAI_Class():
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
                         Token_Cost,DB, MYSQL_USER, MYSQL_PWD, VDSDB, VDSDB_Filename)
 
-def main(Question=None):
+def main(Question=None, Req=None):
     GPT3 = Instantiate_OpenAI_Class()
     # 
-    Prompt_Template_File = f"../prompt_templates/Template_2.txt"
-    Correction_Prompt_File = r"../prompt_templates/Correction_Template.txt"
+    if Req == 'Query':
+        Prompt_Template_File = f"../prompt_templates/Template_2.txt"
+        Correction_Prompt_File = r"../prompt_templates/Correction_Template.txt"
 
-    Prompt_Template, status = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
-    if status != 0:
-        print(f'{Prompt_Template_File } failed to load')
-        return ""
-    
-    Correction_Prompt, status = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
-    if status != 0:
-        print(f'{Correction_Prompt_File } failed to load')
-        return ""
+        Prompt_Template, status = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
+        if status != 0:
+            print(f'{Prompt_Template_File } failed to load')
+            return ""
+        
+        Correction_Prompt, status = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
+        if status != 0:
+            print(f'{Correction_Prompt_File } failed to load')
+            return ""
 
-    print(f'LLM Natural Language to SQL translator')
-    print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
+        print(f'LLM Natural Language to SQL translator')
+        print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
 
-    if Question is None:
-        Question = input('Prompt> Question: ')
+        if Question is None:
+            Question = input('Prompt> Question: ')
 
-    Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=False,  \
-                                Correction_Prompt= Correction_Prompt, \
-                                Max_Iterations=2, Verbose=False, QueryDB = True)
-    return(Query)
+        Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=False,  \
+                                    Correction_Prompt= Correction_Prompt, \
+                                    Max_Iterations=2, Verbose=False, QueryDB = True)
+        return(Query)
+    elif Req == 'Embedding':
+        GPT3.Get_Embeddings_From_DF(Verbose=True)
     
 if __name__ == '__main__':
     p = argparse.ArgumentParser('Natural Language to SQL')
-    p.add_argument('-q', action='store_true', help='Question flag', default='False')
-    p.add_argument('Question', type=str, nargs=1, \
-                    help='Question to pass to LLM')
+    p.add_argument('-E', action='store_true', help='Calculate Embeddings from Dataframe File', default=False)
+    p.add_argument('-q', action='store_true', help='Question flag', default=False)
+    p.add_argument('Input', type=str, nargs=1, \
+                    help='Question to pass to LLM/Embedding File')
     args = p.parse_args()
 
     if args.q == True:
-        Question = args.Question[0]
+        Question = args.Input[0]
         print(Question)
-        Query =  main(Question)
+        Query =  main(Question, Req='Query')
        # print(Query)
+    elif args.E == True:
+        Filename = args.Input[0]
+        print(Filename)
+        rtn=  main(Filename, Req='Embedding')
+    else:
+        print('unsupported option')
+        
 
 
     #txt = "Hello World"
