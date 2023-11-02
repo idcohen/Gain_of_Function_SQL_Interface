@@ -31,7 +31,7 @@ def Instantiate_OpenAI_Class():
                   "text-embedding-ada-002":{"Input":0.0001/1000, "Output":0.0001/1000}}
     
     VDSDB = "Dataframe"
-    VDSDB_Filename = "../Vector_DB/Question_Query_Embeddings.xlsx"
+    VDSDB_Filename = "../Vector_DB/Question_Query_Embeddings-0.xlsx"
 
     #Instantiate GenAI_NL2SQL Object
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
@@ -65,7 +65,7 @@ def main(Question=None, Req=None):
                                     Max_Iterations=2, Verbose=False, QueryDB = True)
         return(Query)
     elif Req == 'Embedding':
-        GPT3.Get_Embeddings_From_DF(Verbose=True)
+        GPT3.Populate_Embeddings_from_DF_Column(Verbose=True)
     
 if __name__ == '__main__':
     p = argparse.ArgumentParser('Natural Language to SQL')
