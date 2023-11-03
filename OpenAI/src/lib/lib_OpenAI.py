@@ -146,6 +146,12 @@ class GenAI_NL2SQL():
     # calculate Question Embedding vector
         Question_Emb = self._VDS.OpenAI_Get_Embedding(Text=Question, Verbose=True)
 
+    # Few Shot Prompt - Search VDS for questions that are similar to the question posed
+    # 11/2/2023: Using Cosine simlarity function
+
+        N_Shot_Prompt_Examples = self._VDS.Search_VDS(Question_Emb, Similarity_Func = 'Cosine', Top_N=1)
+        print(f'N_Shot_Prompt_Examples {N_Shot_Prompt_Examples}')
+        return 0
     # Construct prompt
         if Verbose:
             print('Call Prompt_Query')

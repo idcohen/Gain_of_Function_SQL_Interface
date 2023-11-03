@@ -9,9 +9,9 @@ import sys
 
 sys.path.append(r"/Users/dovcohen/Documents/Projects/AI/NL2SQL")
 from ChatGPT.src.lib.lib_OpenAI import GenAI_NL2SQL 
-from ChatGPT.src.lib.lib_Vector_Datastore import VDS
+# from ChatGPT.src.lib.lib_Vector_Datastore import VDS
 
-def Instantiate_OpenAI_Class():
+def Instantiate_OpenAI_Class(VDSDB_Filename=None):
     load_dotenv("/Users/dovcohen/.NL2SQL_env")
     # SQL DB
     DB = 'mysql'
@@ -31,17 +31,21 @@ def Instantiate_OpenAI_Class():
                   "text-embedding-ada-002":{"Input":0.0001/1000, "Output":0.0001/1000}}
     
     VDSDB = "Dataframe"
-    VDSDB_Filename = "../Vector_DB/Question_Query_Embeddings-0.xlsx"
+
+    if VDSDB_Filename is None:  
+        VDSDB_Filename = "../Vector_DB/Question_Query_Embeddings-1.txt"
 
     #Instantiate GenAI_NL2SQL Object
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
                         Token_Cost,DB, MYSQL_USER, MYSQL_PWD, VDSDB, VDSDB_Filename)
 
-def main(Question=None, Req=None):
-    GPT3 = Instantiate_OpenAI_Class()
-    # 
+def main(Input=None, Req=None):
     if Req == 'Query':
-        Prompt_Template_File = f"../prompt_templates/Template_2.txt"
+        GPT3 = Instantiate_OpenAI_Class()
+        # 
+        Question = Input
+
+        Prompt_Template_File = f"../prompt_templates/Template_3.txt"
         Correction_Prompt_File = r"../prompt_templates/Correction_Template.txt"
 
         Prompt_Template, status = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
@@ -64,24 +68,26 @@ def main(Question=None, Req=None):
                                     Correction_Prompt= Correction_Prompt, \
                                     Max_Iterations=2, Verbose=False, QueryDB = True)
         return(Query)
+    
     elif Req == 'Embedding':
-        GPT3.Populate_Embeddings_from_DF_Column(Verbose=True)
+        VDSDB_Filename = Input
+        GPT3 = Instantiate_OpenAI_Class(VDSDB_Filename=VDSDB_Filename)
+        rtn = GPT3.Populate_Embeddings_from_DF_Column(Verbose=True)
     
 if __name__ == '__main__':
     p = argparse.ArgumentParser('Natural Language to SQL')
-    p.add_argument('-E', action='store_true', help='Calculate Embeddings from Dataframe File', default=False)
-    p.add_argument('-q', action='store_true', help='Question flag', default=False)
-    p.add_argument('Input', type=str, nargs=1, \
-                    help='Question to pass to LLM/Embedding File')
+    p.add_argument('-E', action='store_true', help=" 'Filename' {Calculate Embeddings from Dataframe File}", default=False)
+    p.add_argument('-q', action='store_true', help=" 'Question' {generate SQL query from question}", default=False)
+    p.add_argument('Question_Filename', type=str, nargs=1) 
     args = p.parse_args()
 
     if args.q == True:
-        Question = args.Input[0]
+        Question = args.Question_Filename[0]
         print(Question)
         Query =  main(Question, Req='Query')
        # print(Query)
     elif args.E == True:
-        Filename = args.Input[0]
+        Filename = args.Question_Filename[0]
         print(Filename)
         rtn=  main(Filename, Req='Embedding')
     else:
