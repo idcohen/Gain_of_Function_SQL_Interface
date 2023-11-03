@@ -39,7 +39,7 @@ def Instantiate_OpenAI_Class(VDSDB_Filename=None):
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
                         Token_Cost,DB, MYSQL_USER, MYSQL_PWD, VDSDB, VDSDB_Filename)
 
-def main(Input=None, Req=None):
+def main(Input=None, Req=None, Verbose=False):
     if Req == 'Query':
         GPT3 = Instantiate_OpenAI_Class()
         # 
@@ -58,15 +58,16 @@ def main(Input=None, Req=None):
             print(f'{Correction_Prompt_File } failed to load')
             return ""
 
-        print(f'LLM Natural Language to SQL translator')
-        print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
+        if Verbose:
+            print(f'LLM Natural Language to SQL translator')
+            print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
 
         if Question is None:
             Question = input('Prompt> Question: ')
 
         Query = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=False,  \
                                     Correction_Prompt= Correction_Prompt, \
-                                    Max_Iterations=2, Verbose=False, QueryDB = True)
+                                    Max_Iterations=2, Verbose=True, QueryDB = True)
         return(Query)
     
     elif Req == 'Embedding':
@@ -78,18 +79,23 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser('Natural Language to SQL')
     p.add_argument('-E', action='store_true', help=" 'Filename' {Calculate Embeddings from Dataframe File}", default=False)
     p.add_argument('-q', action='store_true', help=" 'Question' {generate SQL query from question}", default=False)
+    p.add_argument('-v', action='store_true', help=" Verbose Mode", default=False)
     p.add_argument('Question_Filename', type=str, nargs=1) 
     args = p.parse_args()
 
+
+    Verbose = True if args.v == 'True' else False
+
     if args.q == True:
         Question = args.Question_Filename[0]
-        print(Question)
-        Query =  main(Question, Req='Query')
+        if Verbose:
+            print(Question)
+        Query =  main(Question, Req='Query', Verbose=Verbose)
        # print(Query)
     elif args.E == True:
         Filename = args.Question_Filename[0]
         print(Filename)
-        rtn=  main(Filename, Req='Embedding')
+        rtn=  main(Filename, Req='Embedding',Verbose=args.V)
     else:
         print('unsupported option')
         
