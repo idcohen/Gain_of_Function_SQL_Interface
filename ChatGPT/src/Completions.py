@@ -107,12 +107,15 @@ if __name__ == '__main__':
     p.add_argument('-q', action='store_true', help=" 'Question' {generate SQL query from question}", default=False)
     p.add_argument('-v', action='store_true', help=" Verbose Mode", default=False)
     p.add_argument('-F', action='store_true', help=" Flask Mode", default=False)
+    p.add_argument('-T', action='store_true', help=" Test Mode", default=False)
     p.add_argument('Question_Filename', type=str, nargs=1) 
+   
     args = p.parse_args()
-
 
     Verbose = True if args.v == True else False
     Flask_mode = True if args.F == True else False
+    Test_mode = True if args.T == True else False
+
 
     if args.q == True:
         Question = args.Question_Filename[0]
@@ -124,6 +127,8 @@ if __name__ == '__main__':
         Filename = args.Question_Filename[0]
         print(Filename)
         rtn=  main(Filename, Req='Embedding',Verbose=args.V)
+    elif Test_mode:
+        pass
     else:
         print('unsupported option')
         
