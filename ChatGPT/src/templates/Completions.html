@@ -18,7 +18,11 @@
         <br>
         <p>Question = {{ Question }}</p>
         <br>
-        <p>Query = {{ Query }}</p>
+        <p>Results</p>
+        <!-- The | safe filter is used to prevent Jinja2 from escaping the HTML code and rendering it as text. -->
+        <p>{{Results | safe}}</p>  
+        <p>Query </p>
+        <p>{{Query}}</p>
         
     {% endif %}
 </body>

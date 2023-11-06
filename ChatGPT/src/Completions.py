@@ -18,7 +18,7 @@ Flask_output_dir = "Output"
 
 # write Query and DF to temp files
 Query_filename = "Query.sql"
-Results_filename = "Results.csv"
+Results_filename = "Results.xlsx"
 
 def Instantiate_OpenAI_Class(VDSDB_Filename=None):
     load_dotenv("/Users/dovcohen/.NL2SQL_env")
