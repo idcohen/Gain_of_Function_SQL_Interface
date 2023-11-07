@@ -55,3 +55,10 @@ tr:hover            { background-color: #ffff99;}
     height: 150px;
     resize: none;
   }
+
+  div.a {
+    text-indent: 50px;
+  }
+  div.b {
+    text-indent: 30%;
+  }

@@ -19,7 +19,7 @@ def index():
     if request.method == 'POST':
         Question = request.form['Question']
 # -- run
-#         NL2SQL(Question)
+#        NL2SQL(Question)
 
 # -- historical
 #         result = subprocess.check_output(['python', 'lib/Completions.py -q', Question]).decode('utf-8')
@@ -43,6 +43,8 @@ def Read_query_file():
         with open(Filename, 'r') as output_file:
             #k = output_file.read()
             k = output_file.readlines()
+            if k not in ('SELECT','FROM','INNER JOIN','LEFT JOIN','RIGHT JOIN','ON','WHERE','GROUP BY','AND','OR','ORDER BY'):
+                k += 4*' '
         return k
     except FileNotFoundError:
         return None
