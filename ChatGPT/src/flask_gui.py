@@ -11,7 +11,7 @@ def index():
     if request.method == 'POST':
         Question = request.form['Question']
         
-        NL2SQL(Question)
+#        NL2SQL(Question)
 
 #        result = subprocess.check_output(['python', 'lib/Completions.py -q', Question]).decode('utf-8')
         #Query = result.strip().split(',')
@@ -29,15 +29,17 @@ def Read_query_file():
     try:
         Filename = '../Output/Query.sql'
         with open(Filename, 'r') as output_file:
-            k = output_file.read()
-            return k
+            #k = output_file.read()
+            k = output_file.readlines()
+        return k
     except FileNotFoundError:
         return None
     
 def Read_results_file():
     try:
         Filename = '../Output/Results.xlsx'
-        df = pd.read_csv(Filename)
+       # df = pd.read_csv(Filename)
+        df = pd.read_excel(Filename, sheet_name='Flask',parse_dates=True)
         return df
     except FileNotFoundError:
         return None

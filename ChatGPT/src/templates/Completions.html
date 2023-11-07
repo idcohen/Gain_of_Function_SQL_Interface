@@ -4,26 +4,61 @@
 <head>
     <title>Natural Language 2 SQL via OpenAI Completion API</title>
 </head>
+
+<style>
+    .input-box {
+        width: 600px;
+        height: 30px;
+        vertical-align: top;
+  
+    }
+</style>
+
+<script>
+    // JavaScript to disable the form submission for Enter key
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Return" && !event.shiftKey) {
+            event.preventDefault();
+        }
+    });
+</script>
+
 <body>
-    <h1>Enter Question</h1>
+    <h2>Enter Question</h2>
     <form method="POST">
         <label for="Question">Enter Query Question:</label>
-        <input type="text" name="Question" id="Question"><br>
+        <input type="text" name="Question" required class="input-box"><br>
         <br>
         <input type="submit" value="Submit">
     </form>
     <br>
     {% if Question %}
+        <br>
+        <h2>Question:</h2>
+        <p style="font-size: 20px"> {{ Question }}</p>
+        <br>
         <h2>Results:</h2>
-        <br>
-        <p>Question = {{ Question }}</p>
-        <br>
-        <p>Results</p>
-        <!-- The | safe filter is used to prevent Jinja2 from escaping the HTML code and rendering it as text. -->
-        <p>{{Results | safe}}</p>  
-        <p>Query </p>
-        <p>{{Query}}</p>
+        
+        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+        <div class=page>
+        
+            <!-- The | safe filter is used to prevent Jinja2 from escaping the HTML code and rendering it as text. -->
+            <p> {{Results | safe}} </p>  
+        </div>
+
+        {% block content %}
+            <h2>{% block title %} Query {% endblock %}</h2>
+            <div style="width: 50%; margin: left">
+                {% for query in Query %}
+   <!--              <div style="padding: 1px; background-color: #EEE; margin: 10px"> -->
+                <p style="font-size: 16px">{{ query }}</p>
+            </div>
+        {% endfor %}
+    </div>
+    {% endblock %}
         
     {% endif %}
+
 </body>
+
 </html>
