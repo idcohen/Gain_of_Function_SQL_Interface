@@ -44,10 +44,13 @@ def Instantiate_OpenAI_Class(VDSDB_Filename=None):
     if VDSDB_Filename is None:  
         VDSDB_Filename = "../Vector_DB/Question_Query_Embeddings-1.txt"
 
+    # Migration to Chatcompletion API for gpt3.5+ and gpt4 models
+    UsePrompt = True # for "gpt-3.5-turbo-instruct"
+    UseMessage = False
 
     #Instantiate GenAI_NL2SQL Object
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
-                        Token_Cost,DB, MYSQL_USER, MYSQL_PWD, VDSDB, VDSDB_Filename)
+                        Token_Cost,DB, MYSQL_USER, MYSQL_PWD, UsePrompt, UseMessage, VDSDB, VDSDB_Filename)
 
 def main(Input=None, Req=None, Flask_mode = False, Verbose=False):
     if Req == 'Query':
