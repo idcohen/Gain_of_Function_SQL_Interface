@@ -32,6 +32,7 @@ def Instantiate_OpenAI_Class(VDSDB_Filename=None):
 
     # LLM parameters
     Model = "gpt-3.5-turbo-instruct"
+    Model = "gpt-3.5-turbo-0301"
     Embedding_Model = "text-embedding-ada-002"
     Encoding_Base = "cl100k_base"
     Max_Tokens = 250
@@ -44,40 +45,48 @@ def Instantiate_OpenAI_Class(VDSDB_Filename=None):
     if VDSDB_Filename is None:  
         VDSDB_Filename = "../Vector_DB/Question_Query_Embeddings-1.txt"
 
-    # Migration to Chatcompletion API for gpt3.5+ and gpt4 models
-    UsePrompt = True # for "gpt-3.5-turbo-instruct"
-    UseMessage = False
-
     #Instantiate GenAI_NL2SQL Object
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
-                        Token_Cost,DB, MYSQL_USER, MYSQL_PWD, UsePrompt, UseMessage, VDSDB, VDSDB_Filename)
+                        Token_Cost, DB, MYSQL_USER, MYSQL_PWD, WD, VDSDB, VDSDB_Filename)
 
 def main(Input=None, Req=None, Flask_mode = False, Verbose=False):
     if Req == 'Query':
         GPT3 = Instantiate_OpenAI_Class()
-        # 
+        
         Question = Input
 
         Prompt_Template_File = f"../prompt_templates/Template_3.txt"
         Correction_Prompt_File = r"../prompt_templates/Correction_Template.txt"
         # Update VDS
         Update_VDS=True
+
         Prompt_Update = True
         Verbose = True
+
         if Flask_mode:  
             Prompt_Update = False
             Verbose = False
      
+        # Migration to Chatcompletion API for gpt3.5+ and gpt4 models
+        UsePrompt = False # for "gpt-3.5-turbo-instruct"
+        UseMessage = True # for "gpt-3.5+ and beyound"
 
-        Prompt_Template, status = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
-        if status != 0:
-            print(f'{Prompt_Template_File } failed to load')
-            return ""
-        
-        Correction_Prompt, status = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
-        if status != 0:
-            print(f'{Correction_Prompt_File } failed to load')
-            return ""
+        # Sanity Check
+        if (UsePrompt == True) and (UseMessage == True):
+            print(f'OpenAI API conflict, both UsePrompt and UseMessage selected \nOnly UsePrompt or UseMessages can be set to True')
+            return -100
+
+        if UsePrompt:
+            Prompt_Template, status = GPT3.Load_Prompt_Template(File=Prompt_Template_File )
+
+            if status != 0:
+                print(f'{Prompt_Template_File } failed to load')
+                return ""
+            
+            Correction_Prompt, status = GPT3.Load_Prompt_Template(File=Correction_Prompt_File )
+            if status != 0:
+                print(f'{Correction_Prompt_File } failed to load')
+                return ""
 
         if Verbose:
             print(f'LLM Natural Language to SQL translator')
@@ -86,11 +95,26 @@ def main(Input=None, Req=None, Flask_mode = False, Verbose=False):
         if Question is None:
             Question = input('Prompt> Question: ')
 
-        Query, df = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=False,  \
-                                    Correction_Prompt= Correction_Prompt, \
-                                    Max_Iterations=2, Verbose=Verbose, QueryDB = True,
-                                    Update_VDS=Update_VDS, Prompt_Update=Prompt_Update)
-        
+        if UsePrompt:
+            if Verbose:
+                print(f'Using Prompt Completion')
+            Query, df = GPT3.GPT_Completion(Question, Prompt_Template, Correct_Query=False,  \
+                                Correction_Prompt= Correction_Prompt, \
+                                Max_Iterations=2, Verbose=Verbose, QueryDB = True,
+                                Update_VDS=Update_VDS, Prompt_Update=Prompt_Update)
+    
+        elif UseMessage== True:
+            if Verbose:
+                print(f'Using Message Completion')
+
+            Query, df = GPT3.GPT_ChatCompletion(Question, \
+                Max_Iterations=2, Verbose=Verbose, QueryDB = True,
+                Update_VDS=Update_VDS, Prompt_Update=Prompt_Update)
+
+        else:
+            print('OpenAI completion API interface was not specified')
+            return -1
+
         
         if Flask_mode:
             Fde = Flask_data_exchange(WD, Output_dir= Flask_output_dir)
@@ -123,7 +147,7 @@ if __name__ == '__main__':
     if args.q == True:
         Question = args.Question_Filename[0]
         if Flask_mode == False:
-            print(Question)
+            print(f'\nQuestion: {Question}\n')
         Query =  main(Question, Req='Query', Flask_mode=Flask_mode, Verbose=Verbose)
        # print(Query)
     elif args.E == True:
@@ -135,8 +159,3 @@ if __name__ == '__main__':
     else:
         print('unsupported option')
         
-
-
-    #txt = "Hello World"
-    #GPT3.Encoding(txt, Verbose=True)
-    #GPT3.Decoding(Verbose=True)
