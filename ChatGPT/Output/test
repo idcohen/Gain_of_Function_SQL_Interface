@@ -1,0 +1,43 @@
+Response {
+  "id": "chatcmpl-8LJhJVCStz7REWobYuvd57dbrizPZ",
+  "object": "chat.completion",
+  "created": 1700091297,
+  "model": "gpt-3.5-turbo-0301",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "I'm sorry, but I need more information to answer your question. Do you want to know the current balances of all Mary Spock's accounts or just a specific account?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1325,
+    "completion_tokens": 35,
+    "total_tokens": 1360
+  }
+}
+
+
+
+Response {
+  "id": "cmpl-8LKFoHcwWk9KDXJUpBeECQbISVBcL",
+  "object": "text_completion",
+  "created": 1700093436,
+  "model": "gpt-3.5-turbo-instruct",
+  "choices": [
+    {
+      "text": "\nQuery: SELECT account.acct_nbr, balance.balance, product.type, date.date FROM account INNER JOIN product ON account.product_id = product.id INNER JOIN balance ON account.id = balance.account_id INNER JOIN date ON balance.balance_dt_id = date.id INNER JOIN relationship ON account.id = relationship.account_id INNER JOIN client ON relationship.client_id = client.id WHERE client.name = 'Mary Spock' AND date.date = '2023-10-11' AND relationship.relationship_type = 'Primary';",
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1302,
+    "completion_tokens": 99,
+    "total_tokens": 1401
+  }
+}

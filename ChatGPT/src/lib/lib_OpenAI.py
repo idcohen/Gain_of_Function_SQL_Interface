@@ -63,7 +63,7 @@ class GenAI_NL2SQL():
             Prompt = _Prompt_Template_.replace(i,j)
 
         if Write_Template:
-            filename = '../prompt_templates/Template_tmp.txt'
+            filename = f'{self._WD}/prompt_templates/Template_tmp.txt'
             prompt_file = open(filename, 'w') 
             prompt_file.write(Prompt)
             prompt_file.close()
@@ -119,17 +119,6 @@ class GenAI_NL2SQL():
 #############################################################################
     def OpenAI_ChatCompletion(self, Messages):
         try:
-            #Make your OpenAI API request here
-            messages=[
-                {"role": "system", "content": "You are a helpful, pattern-following assistant."},
-                {"role": "user", "content": "Help me translate the following corporate jargon into plain English."},
-                {"role": "assistant", "content": "Sure, I'd be happy to!"},
-                {"role": "user", "content": "New synergies will help drive top-line growth."},
-                {"role": "assistant", "content": "Things working well together will increase revenue."},
-                {"role": "user", "content": "Let's circle back when we have more bandwidth to touch base on opportunities for increased leverage."},
-                {"role": "assistant", "content": "Let's talk later when we're less busy about how to do better."},
-                {"role": "user", "content": "This late pivot means we don't have time to boil the ocean for the client deliverable."},
-            ]
             response = openai.ChatCompletion.create(
                 model=self._LLM_Model,
                 messages=Messages,
@@ -156,22 +145,27 @@ class GenAI_NL2SQL():
 
 
 #############################################################################
-    def OpenAI_Text_Extraction(self, Response, Type='SQL'):
-        if Type == 'SQL':
-            ## Call prompt that removes extraneaous characters from the returned query
+    def OpenAI_Response_Parser(self, Response, Debug=False):
+
+        if Debug:
+            print(f'Response {Response}')
+    
+        id = Response['id']
+        object = Response['object']
+        if object == 'text_completion':
             Txt = str(Response['choices'][0]['text'])
             if Txt[0:7] == "\nQuery:":
                 Txt = Txt[7:]
-        elif Type == 'Text':
-            Txt = str(Response['choices'][0]['text'])
+        elif object == 'chat.completion':
+            Txt = str(Response['choices'][0]['message']['content'])
         else:
             print(f'Type: {Type} is Unsupported ')
             Txt = ''
         return(Txt)
 
-
 ##############################################################################    
-    def Prompt_Query(self, Prompt_Template, Question = '', N_Shot_Examples = None, Verbose=False, Debug=False):
+    def Prompt_Query(self, Prompt_Template, Question = '', N_Shot_Examples = None, Verbose=False, 
+                     Debug=False):
         status = 0
         df = pd.DataFrame()
 
@@ -201,7 +195,7 @@ class GenAI_NL2SQL():
 
     
     # extract query from LLM response
-        Query = self.OpenAI_Text_Extraction(Response, Type='SQL')
+        Query = self.OpenAI_Response_Parser(Response)
 
         return Query
     
@@ -294,7 +288,7 @@ class GenAI_NL2SQL():
 ##############################################################################
     # Given an single input question, run the entire process
     def GPT_ChatCompletion(self, Question, Max_Iterations=0, Verbose=False, QueryDB = False, 
-                       Update_VDS=True, Prompt_Update=True):
+                       Correct_Query=False, Update_VDS=True, Prompt_Update=True):
     
     # Request Question Embedding vector
         Question_Emb = self._VDS.OpenAI_Get_Embedding(Text=Question, Verbose=False)
@@ -304,7 +298,8 @@ class GenAI_NL2SQL():
         Prompt_Examples = {'Question':rtn[1], 'Query':rtn[2]}
 
     # Construct prompt
-        Query = self.Message_Query(Question, N_Shot_Examples = Prompt_Examples, Verbose=False, Debug=True)
+        Query = self.Message_Query(Question, N_Shot_Examples = Prompt_Examples, Verbose=False, Debug=False)
+        
         if Query == -100:
             return 
         if Verbose:
@@ -313,6 +308,8 @@ class GenAI_NL2SQL():
     # Test query the DB - 
         if QueryDB:
             status, df = run_query(Query = Query, Credentials = self._MYSQL_Credemtals, DB=self._DB, Verbose=False)
+            print(f'Status {status}')
+            
             # if query was malformed, llm halucianated for example
             if Correct_Query and (status == -5):
                 while (status == -5) and (Correct_Query_Iterations < Max_Iterations): 
@@ -341,7 +338,7 @@ class GenAI_NL2SQL():
     
 ##############################################################################
 # Import Message Template    
-    def Prepare_Message_Template(self, Verbose=False):
+    def Prepare_Message_Template(self, Verbose=False, Debug=False):
         # Import Mesage Template file
         Filename = f'{self._WD}/Message_templates/Template_0.txt'
         # Filename = self._MessageTemplate
@@ -354,16 +351,17 @@ class GenAI_NL2SQL():
             Status = -1
             return  "", Status
         
-        print(f'Template {Template}')
+        if Debug:
+            print(f'Template {Template}')
         Messages = [{"role": "system", "content": Template}]
-        if Verbose:
+        if Debug:
             print(f'Prepare Message Template: \n {Messages} \n end \n')
 
         return Messages, Status
     
 ##############################################################################  
 # Insert_N_Shot_Messages
-    def Insert_N_Shot_Messages(self, Messages, N_Shot_Examples, Verbose=False):
+    def Insert_N_Shot_Messages(self, Messages, N_Shot_Examples, Verbose=False, Debug=False):
         """
             Insert example questions and queries into message list for ChatCompletion API
         """ 
@@ -372,7 +370,7 @@ class GenAI_NL2SQL():
             Messages.append({"role": "system", "name":"example_user", "content": N_Shot_Examples['Question'][i]})
             Messages.append({"role": "system", "name":"example_assistant", "content": N_Shot_Examples['Query'][i]})
 
-        if Verbose:
+        if Debug:
             print(f'Insert_N_Shot_Examples: {Messages[0]}\n')
             print(f'Insert_N_Shot_Examples: {Messages[1]}\n')
             print(f'Insert_N_Shot_Examples: {Messages[2]}')
@@ -380,18 +378,18 @@ class GenAI_NL2SQL():
         return Messages
     
 ##############################################################################    
-    def Insert_Queston(self, Messages, Question, Verbose=True):
+    def Insert_Queston(self, Messages, Question, Verbose=True, Debug=False):
          
          """
             Insert question  into message list for ChatCompletion API
          """  
          Messages.append({"role": "user", "content": Question})
-         if Verbose:
+         if Debug:
              print(f'Insert Question: \n {Messages[3]}')
          return Messages
                         
 ##############################################################################    
-    def Message_Query(self, Question = '', N_Shot_Examples = None, Verbose=False, Debug=True):
+    def Message_Query(self, Question = '', N_Shot_Examples = None, Verbose=False, Debug=False):
         """
         Message dictionary format for ChatCompletion API
         """
@@ -407,8 +405,8 @@ class GenAI_NL2SQL():
 
         # Insert question
         Messages = self.Insert_Queston(Messages, Question, Verbose=True)
-
-        print(f' Message_Query: \n {Messages}')
+        if Debug:
+            print(f' Message_Query: \n {Messages}')
 
         # Estimate input prompt cost
 #        Cost, Tokens_Used  = Prompt_Cost(Prompt, self._LLM_Model, self._Token_Cost, self._Encoding_Base)
@@ -429,7 +427,7 @@ class GenAI_NL2SQL():
             print(f'Total Cost: {round(Cost,3)} Tokens Used {Tokens_Used}','\n') 
 
     # extract query from LLM response
-        Query = self.OpenAI_Text_Extraction(Response, Type='SQL')
+        Query = self.OpenAI_Response_Parser(Response)
 
         return Query
     
