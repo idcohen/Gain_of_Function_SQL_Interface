@@ -1,0 +1,46 @@
+<!-- templates/fapp.html -->
+<!DOCTYPE html>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<html>
+<head>
+    <title>Natural Language 2 SQL via OpenAI Completion API</title>
+</head>
+<title>Natural Language 2 SQL via OpenAI Completion API</title>
+
+
+{% if Question %} 
+        <br>
+        <h2>Question:</h2>
+        <p style="font-size: 20px"> {{ Question }}</p>
+        <br>
+        <h2>Results:</h2>
+
+        <div class=page>
+        
+            <!-- The | safe filter is used to prevent Jinja2 from escaping the HTML code and rendering it as text. -->
+            <p> {{Results | safe}} </p>  
+        </div>
+
+
+        <a style="font-size: 16px" href="/">Go back to input page</a>
+        <br>
+        <br>
+        <hr class="solid">
+        <br>
+        {% block content %}
+            <h2>{% block title %} Query {% endblock %}</h2>
+            <div style="width: 50%; margin: left">
+                {% for query in Query %}
+        <!--     <div style="padding: 1px; background-color: #EEE; margin: 10px"> -->
+                <p style="font-size: 14px">{{ query }}</p> 
+            </div>
+        {% endfor %}
+    </div>
+    <br>
+    <br>
+    {% endblock %}
+   {% endif %} 
+
+</body>
+
+</html>
