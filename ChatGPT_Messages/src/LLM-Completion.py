@@ -7,21 +7,20 @@ import getpass
 from dotenv import load_dotenv
 import pandas as pd
 import argparse
-from ChatGpt-
-from ChatGPT.src.lib.Flask_Data_Exchage import Flask_data_exchange
-from ChatGPT.src.lib.lib_OpenAI import GenAI_NL2SQL 
+from  ChatGPT_Messages.src.lib.Flask_Data_Exchage import Flask_data_exchange
+from ChatGPT_Messages.src.lib.lib_OpenAI import GenAI_NL2SQL 
 
 # from ChatGPT.src.lib.lib_Vector_Datastore import VDS
 
 # Directories
-WD = "/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT-Messges"
+WD = "/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT_Messages"
 Flask_output_dir = "Output"
 
 # write Query and DF to temp files
 Query_filename = "Query.sql"
 Results_filename = "Results.xlsx"
 
-def Instantiate_OpenAI_Class(Model== "gpt-3.5-turbo", VDSDB_Filename=None):
+def Instantiate_OpenAI_Class(Model= "gpt-3.5-turbo", VDSDB_Filename=None):
     load_dotenv("/Users/dovcohen/.NL2SQL_env")
     # SQL DB
     DB = 'mysql'
@@ -99,7 +98,7 @@ if __name__ == '__main__':
     p.add_argument('-v', action='store_true', help=" Verbose Mode", default=False)
     p.add_argument('-F', action='store_true', help=" Flask Mode", default=False)
     p.add_argument('-T', action='store_true', help=" Test Mode", default=False)
-    p.add_argument('Question_Filename', type=str, nargs=1) 
+    p.add_argument('Question_or_Embedding_Filename', type=str, nargs=1) 
    
     args = p.parse_args()
 
@@ -111,7 +110,7 @@ if __name__ == '__main__':
     # Model_Type = 'Instruct' # Instruct or Chat
     Model = "gpt-3.5-turbo"
     if args.q == True:
-        Question = args.Question_Filename[0]
+        Question = args.Question_or_Embedding_Filename[0]
         if Flask_mode == False:
             print(f'\nQuestion: {Question}\n')
         Query =  main(Question, Model, Req='Query', Flask_mode=Flask_mode, Verbose=Verbose)
