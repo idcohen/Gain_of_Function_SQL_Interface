@@ -298,7 +298,7 @@ class GenAI_NL2SQL():
         Prompt_Examples = {'Question':rtn[1], 'Query':rtn[2]}
 
     # Construct prompt
-        Query = self.Message_Query(Question, N_Shot_Examples = Prompt_Examples, Verbose=False, Debug=False)
+        Query = self.Message_Query(Question, Ntem_Shot_Examples = Prompt_Examples, Verbose=False, Debug=False)
         
         if Query == -100:
             return 
@@ -340,7 +340,7 @@ class GenAI_NL2SQL():
 # Import Message Template    
     def Prepare_Message_Template(self, Verbose=False, Debug=False):
         # Import Mesage Template file
-        Filename = f'{self._WD}/Message_templates/Template_0.txt'
+        Filename = f'{self._WD}/Message_Templates/Template_0.txt'
         # Filename = self._MessageTemplate
         try:
             with open(Filename, 'r') as file:
