@@ -52,8 +52,7 @@ def main(Input=None, Model=None, Req=None, Flask_mode = False, Verbose=False):
         GPT3 = Instantiate_OpenAI_Class(Model)
         
         Question = Input
-
-        # Update VDS
+# Update VDS
         Update_VDS=True
 
         Prompt_Update = True
@@ -98,13 +97,15 @@ if __name__ == '__main__':
     p.add_argument('-v', action='store_true', help=" Verbose Mode", default=False)
     p.add_argument('-F', action='store_true', help=" Flask Mode", default=False)
     p.add_argument('-T', action='store_true', help=" Test Mode", default=False)
-    p.add_argument('Question_or_Embedding_Filename', type=str, nargs=1) 
+    p.add_argument('-I', action='store_true', help=" Interactive Mode", default=False))
+    p.add_argument('Question_or_Embedding_Filename',  nargs='?', default=[None], type=str) 
    
     args = p.parse_args()
 
     Verbose = True if args.v == True else False
     Flask_mode = True if args.F == True else False
     Test_mode = True if args.T == True else False
+    Interactive_Mode = True if args.I == True else False
 
     # Migration to Chatcompletion API for gpt3.5+ and gpt4 models
     # Model_Type = 'Instruct' # Instruct or Chat
