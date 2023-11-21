@@ -1,13 +1,27 @@
-create_table_naics = """
+/* Fake Bank DDL */
+
+/*
+drop table NAICS;
+drop table relationship ;
+drop table balance;
+drop table account;
+drop table product;
+drop table client;
+drop table employer;
+drop table HH;
+drop table address;
+drop table banker;
+drop table Transactions;
+drop table date;
+
+*/
 create table NAICS
 (
     NAICS_CD integer Primary key,
     DESCRIPTION varchar(128)
 );
-"""
 
-create_table_product = """
-create table product
+    create table product
     (
         ID integer primary key,
         Type varchar(128) not null,
@@ -16,10 +30,8 @@ create table product
         End_Dt date not null,
         Is_Current integer not null
     );
-"""
 
-create_table_banker = """
-create table banker
+    create table banker
     (
         ID integer primary key,
         Name varchar(128) not null,
@@ -29,9 +41,7 @@ create table banker
 		End_Dt date not null,
         Is_Current integer not null
     );
-"""
 
-create_table_address = """
     create table address
     (
         ID integer primary key,
@@ -43,21 +53,7 @@ create_table_address = """
         End_Dt date not null,
         Is_Current integer not null
     );
-   """
-create_table_date = """
-       create table date
-    (
-        ID integer primary key,
-        Date date not null,
-        Julian_Dt integer not null,
-        Month integer not null,
-        Day integer not null,
-        Year integer not null,
-        Quarter integer not null
-    );
-"""
-
-create_table_account = """
+    
        create table account
     (
         ID integer primary key,
@@ -67,15 +63,13 @@ create_table_account = """
         Status varchar(128) not null,
         Open_Dt date not null,
         Close_Dt date,
-	Start_Dt date not null,
-	End_Dt date not null,
+		Start_Dt date not null,
+		End_Dt date not null,
         Is_Current integer not null,
         FOREIGN KEY(Product_ID) REFERENCES Product(ID),
         FOREIGN KEY(Banker_ID) REFERENCES banker(ID)   
     );
-"""
 
-create_table_HH = """
     create table  HH
     (
         ID integer PRIMARY KEY,
@@ -92,10 +86,9 @@ create_table_HH = """
         FOREIGN KEY(Address_ID) REFERENCES address(ID),
         FOREIGN KEY(Banker_ID) REFERENCES banker(ID),
         FOREIGN KEY(NAICS_CD) REFERENCES NAICS(NAICS_CD)
+        
     );
-"""
-
-create_table_employer = """   
+   
     create table employer
     (
         ID integer primary key,
@@ -110,9 +103,7 @@ create_table_employer = """
         FOREIGN KEY(Address_ID) REFERENCES address(ID),
         Foreign key(NAICS_CD) References NAICS(NAICS_CD) 
     );
-"""
 
-create_table_client = """
    
    CREATE TABLE client
     (
@@ -138,26 +129,37 @@ create_table_client = """
         FOREIGN KEY(HH_ID) REFERENCES HH(ID),
         FOREIGN KEY(Employer_ID) REFERENCES employer(ID),
         Foreign key(NAICS_CD) References NAICS(NAICS_CD) 
+    
     );
-"""
+
    
-create_table_relationship = """
     create table relationship
     (
         ID integer primary key,
         Account_ID integer not null,
         Client_ID integer not null,
         Relationship_Type varchar(128) not null,
-	Start_Dt date not null,
-	End_Dt date not null,
+   		Start_Dt date not null,
+		End_Dt date not null,
         Is_Current integer not null,
         FOREIGN KEY(Account_ID) REFERENCES account(ID),
         FOREIGN KEY(Client_ID) REFERENCES client(ID)
     );
-"""  
+        
 
-create_table_balance = """
-   create table  balance
+       create table date
+    (
+        ID integer primary key,
+        Date date not null,
+        Julian_Dt integer not null,
+        Month integer not null,
+        Day integer not null,
+        Year integer not null,
+        Quarter integer not null
+    );
+
+   
+    create table  balance
     (
         ID integer primary key,
         Account_ID integer not null,
@@ -166,9 +168,8 @@ create_table_balance = """
         FOREIGN KEY(Account_ID) REFERENCES account(ID),
         FOREIGN KEY(Balance_Dt_Id) REFERENCES date(ID)
     );
-"""
 
-create_table_transactions = """
+        
    create table Transactions
    (
 		IDX integer primary key,
@@ -184,4 +185,3 @@ create_table_transactions = """
 		Balance float,
 		Transaction_Description varchar(256)
 	);
-"""
