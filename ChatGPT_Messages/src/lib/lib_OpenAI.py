@@ -37,13 +37,16 @@ class GenAI_NL2SQL():
         self._DB = DB
         self._MYSQL_Credentials = {'User':MYSQL_USER,'PWD':MYSQL_PWD}
         self._WD = WD
-      #  self.Set_OpenAI_API_Key()
+        self.Set_OpenAI_API_Key()
         if VDSDB is not None:
             self._VDSDB = VDSDB
             self._VDS = VDS(VDSDB_Filename, Encoding_Base, Embedding_Model, Token_Cost, Max_Tokens) 
             self._VDS.Load_VDS_DF(Verbose=False)
         self._Message_Template = f'{self._WD}/Message_Templates/Template_MySQL.txt'
         self._Messages = [] # message a list of dictionary elements
+        self._N_Shot_Examples = {}
+        self._Question_Emb = [] # Question Embeddings 
+        
         
     def Set_OpenAI_API_Key(self):
         openai.api_key = self._OpenAI_API_Key
@@ -86,48 +89,37 @@ class GenAI_NL2SQL():
             return {}, status
         return response, status
 
+
 ##############################################################################
-    # Given an single input question, run the entire process
-    def GPT_ChatCompletion(self, Question, Max_Iterations=0, Verbose=False, QueryDB = False, 
-                       Correct_Query=False, Update_VDS=True, Prompt_Update=True):
-        """
-            Method to Orchestrate Process
-        
-        """
-    # Request Question Embedding vector
-        Question_Emb = self._VDS.OpenAI_Get_Embedding(Text=Question, Verbose=Verbose)
-        
-    # Search Vector Datastore for similar questions
-        rtn = self._VDS.Search_VDS(Question_Emb, Similarity_Func = 'Cosine', Top_n=3)
-        N_Shot_Examples = {'Question':rtn[1], 'Query':rtn[2]}
+    def GPT_Chat(self, Question, Use_N_Shot_Prompt = True, QueryDB = False, 
+                 Display_DF_Rows = 0, Update_VDS=True, Prompt_Update=True, 
+                 Verbose = False, Debug=False):
 
-      # Construct prompt
-        Query, Status = self.Message_Query(Question, N_Shot_Examples = N_Shot_Examples, Verbose=Verbose, Debug=False)
-        
-        if Status == -100:
-            return 
-        if Verbose:
-            print(f'Query: \n {Query} \n')
+        Verbose = False
+        # default values
+        Query = ''
+        df = pd.DataFrame()
 
-    # Test query the DB - 
+        # Prepare Message Template
+        Status = self.Prepare_Message_Template(Verbose)
+        # Search for relevant examples
+        if Use_N_Shot_Prompt:
+            Status = self.GPT_Search_N_Shot_Examples(Question, Verbose)
+            # Insert examples into Message list 
+            Status = self.Append_N_Shot_Messages(Verbose)
+        # Insert Question into Message list
+        Status = self.Append_Queston(Question, Verbose=Verbose)
+       
+        if Debug:
+            print(f' Message_Query: \n {self._Messages}')
+
+        Returned_Message, Status = self.GPT_ChatCompletion(Verbose)
+        Response = self.OpenAI_Response_Parser(Returned_Message)
         if QueryDB:
-            status, df = Run_Query(Query = Query, Credentials = self._MYSQL_Credentials, DB=self._DB, Verbose=False)
-            print(f'Status {status}')
-            
-            # Correct query if malformed
-            if Correct_Query and (status == -5):
-                while (status == -5) and (Correct_Query_Iterations < Max_Iterations): 
-                    Correct_Query_Iterations += 1
-                    print('Attempting to correct query syntax error')
-                    # need to append message with returned error, want correction vds
-                    " for example - I'm sorry, but I cannot provide the answer to that question as there is no table or column in the given database schema that contains transaction balances."
-                    Query = self.Prompt_Query(Correction_Prompt, Question, Verbose=False)
-            # Query the DB
-                    status, df = Run_Query(Query = Query, Credentials = self._MYSQL_Credentials,\
-                    DB=self._DB, Verbose=False)    
-
-            if Verbose:      
-                print(f'Results of query: \n',df)
+                Status, df = self.Query_DB(Response, Verbose)
+        
+        if Display_DF_Rows > 0:
+            print(f'Results of query: \n',df.head(Display_DF_Rows))
 
         if Update_VDS:
             if Prompt_Update:
@@ -136,11 +128,69 @@ class GenAI_NL2SQL():
                     print(f'Add results to Vector Datastore DB? Y or N')
                     rtn = input('Prompt> ')
                 if rtn == 'Y':
-                    self._VDS.Insert_VDS(Question=Question, Query=Query, Metadata='',Embedding=Question_Emb)
+                    self._VDS.Insert_VDS(Question=Question, Query=Query, Metadata='',Embedding=self._Question_Emb)
             else:
-                self._VDS.Insert_VDS(Question=Question, Query=Query, Metadata='',Embedding=Question_Emb)
+                self._VDS.Insert_VDS(Question=Question, Query=Query, Metadata='',Embedding=self._Question_Emb)
     # Return Query
         return Query, df
+        
+
+##############################################################################
+#
+    def GPT_Search_N_Shot_Examples(self, Question, Verbose=False):
+        # Request Question Embedding vector
+        self._Question_Emb = self._VDS.OpenAI_Get_Embedding(Text=Question, Verbose=Verbose)
+        
+    # Search Vector Datastore for similar questions
+        rtn = self._VDS.Search_VDS(self._Question_Emb, Similarity_Func = 'Cosine', Top_n=3)
+        self._N_Shot_Examples = {'Question':rtn[1], 'Query':rtn[2]}
+        return 0
+
+##############################################################################
+    # Given an single input question, run the entire process
+    def GPT_ChatCompletion(self, Verbose=False, Debug=False):
+        """
+            With a specific question, insert examples and question into the message list
+             
+        """
+            # Send prompt to LLM
+        Response, Status = self.OpenAI_ChatCompletion()
+
+        if Debug:
+            print(f'Status {Status} \n Response {Response} \n')
+       
+        Cost, Tokens_Used  = OpenAI_Usage_Cost(Response, self._LLM_Model, self._Token_Cost )
+        
+        if Verbose:
+            print(f'Total Cost: {round(Cost,3)} Tokens Used {Tokens_Used}','\n') 
+
+        return Response, Status
+
+#############################################################################
+    def Query_DB(self, Query, Verbose=False, Debug=False):
+    # Test query the DB - 
+        if Verbose:
+            print(f'Query_DB: Query \n {Query}')
+        Status, df = Run_Query(Query = Query, Credentials = self._MYSQL_Credentials, DB=self._DB, Verbose=Verbose)
+            
+            # # Correct query if malformed
+            # if Correct_Query and (status == -5):
+            #     while (status == -5) and (Correct_Query_Iterations < Max_Iterations): 
+            #         Correct_Query_Iterations += 1
+            #         print('Attempting to correct query syntax error')
+            #         # need to append message with returned error, want correction vds
+            #         " for example - I'm sorry, but I cannot provide the answer to that question as there is no table or column in the given database schema that contains transaction balances."
+            #         Query = self.Prompt_Query(Correction_Prompt, Question, Verbose=False)
+            # # Query the DB
+            #         status, df = Run_Query(Query = Query, Credentials = self._MYSQL_Credentials,\
+            #         DB=self._DB, Verbose=False)    
+
+            # if Verbose:      
+            #     print(f'Results of query: \n',df)
+
+    # Return Query and Dataframe
+        return Query, df
+
     
 #############################################################################
     def OpenAI_Response_Parser(self, Response, Debug=False):
@@ -218,14 +268,14 @@ class GenAI_NL2SQL():
     
 ##############################################################################  
 # Insert_N_Shot_Messages
-    def Append_N_Shot_Messages(self, N_Shot_Examples, Verbose=False, Debug=False):
+    def Append_N_Shot_Messages(self, Verbose=False, Debug=False):
         """
             Append example questions and queries into message list for ChatCompletion API
         """ 
 
-        for i in range(len(N_Shot_Examples['Question'])):
-            self._Messages.append({"role": "system", "name":"example_user", "content": N_Shot_Examples['Question'][i]})
-            self._Messages.append({"role": "system", "name":"example_assistant", "content": N_Shot_Examples['Query'][i]})
+        for i in range(len(self._N_Shot_Examples['Question'])):
+            self._Messages.append({"role": "system", "name":"example_user", "content": self._N_Shot_Examples['Question'][i]})
+            self._Messages.append({"role": "system", "name":"example_assistant", "content": self._N_Shot_Examples['Query'][i]})
             
         status = 0
         return status
@@ -240,42 +290,19 @@ class GenAI_NL2SQL():
         return status
                         
 ##############################################################################    
-    def Message_Query(self, Question = '', N_Shot_Examples = None, Verbose=False, Debug=True):
+    def Message_Query(self, Verbose=False, Debug=True):
         """
         Message dictionary format for ChatCompletion API
         """
         Status = 0
         df = pd.DataFrame()
-        
-        # Prepare Message Template
-        Status = self.Prepare_Message_Template(Verbose)
-
-        # Insert Example Messages
-        Status = self.Append_N_Shot_Messages(N_Shot_Examples, Verbose=Verbose)
-
-        # Insert question
-        Status = self.Append_Queston(Question, Verbose=Verbose)
-        
-        if Debug:
-            print(f' Message_Query: \n {self._Messages}')
-
+    
         # Estimate input prompt cost
 #        Cost, Tokens_Used  = Prompt_Cost(Prompt, self._LLM_Model, self._Token_Cost, self._Encoding_Base)
 #        if Verbose:
 #            print('Input')  
 #            print(f'Total Cost: {round(Cost,3)} Tokens Used {Tokens_Used}')
     
-    # Send prompt to LLM
-        Response, Status = self.OpenAI_ChatCompletion()
-
-        if Debug:
-            print(f'Status {Status} \n Response {Response} \n')
-       
-        Cost, Tokens_Used  = OpenAI_Usage_Cost(Response, self._LLM_Model, self._Token_Cost )
-        
-        if Verbose:
-            print(f'Total Cost: {round(Cost,3)} Tokens Used {Tokens_Used}','\n') 
-
     # extract query from LLM response
         Query = self.OpenAI_Response_Parser(Response)
 

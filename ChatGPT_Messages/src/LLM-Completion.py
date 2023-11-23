@@ -47,20 +47,19 @@ def Instantiate_OpenAI_Class(Model= "gpt-3.5-turbo", VDSDB_Filename=None):
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
                         Token_Cost, DB, MYSQL_USER, MYSQL_PWD, WD, VDSDB, VDSDB_Filename)
 
-def main(Input=None, Model=None, Req=None, Flask_mode = False, Verbose=False):
+def main(Input=None, Model=None, Req=None, Flask_mode = False, Verbose=False, Display_DF_Rows=5):
     if Req == 'Query':
         GPT3 = Instantiate_OpenAI_Class(Model)
         
         Question = Input
 # Update VDS
         Update_VDS=True
-
         Prompt_Update = True
-        Verbose = True
 
         if Flask_mode:  
             Prompt_Update = False
             Verbose = False
+            Display_DF_Rows = 0
 
         if Question is None:
             Question = input('Prompt> Question: ')
@@ -69,9 +68,9 @@ def main(Input=None, Model=None, Req=None, Flask_mode = False, Verbose=False):
             print(f'LLM Natural Language to SQL translator')
             print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
 
-        Query, df = GPT3.GPT_ChatCompletion(Question, \
-            Max_Iterations=2, Verbose=Verbose, QueryDB = True,
-            Update_VDS=Update_VDS, Prompt_Update=Prompt_Update)
+        Query, df = GPT3.GPT_Chat(Question, Use_N_Shot_Prompt = True, QueryDB = True, 
+                                  Display_DF_Rows = Display_DF_Rows, Update_VDS=Update_VDS, Prompt_Update=Prompt_Update, 
+                                    Verbose = Verbose, Debug=False)
 
         if Flask_mode:
             Fde = Flask_data_exchange(WD, Output_dir= Flask_output_dir)
@@ -114,7 +113,7 @@ if __name__ == '__main__':
         Question = args.Question_or_Embedding_Filename
         if Flask_mode == False:
             print(f'\nQuestion: {Question}\n')
-        Query =  main(Question, Model, Req='Query', Flask_mode=Flask_mode, Verbose=Verbose)
+        Query =  main(Question, Model, Req='Query', Flask_mode=Flask_mode, Verbose=Verbose, Display_DF_Rows=5)
        # print(Query)
     elif args.E == True:
         Filename = args.Question_Filename[0]

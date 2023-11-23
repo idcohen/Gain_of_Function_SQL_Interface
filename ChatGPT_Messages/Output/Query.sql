@@ -1,14 +1,9 @@
 
 SELECT
  account.acct_nbr,
- balance.balance,
- product.type 
+ balance.balance 
 FROM
  account 
-INNER JOIN
- product 
-ON
- account.product_id = product.id 
 INNER JOIN
  balance 
 ON
