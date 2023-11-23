@@ -7,9 +7,11 @@ import sys
 import pandas as pd
 
 
-Wd = '/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT/src/Flask'
-App_dir = '/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT/src'
-Output_dir = '/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT/Output'
+WD = '/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT_Messages'
+Flask_Dir = f'{WD}/src/Flask'
+App_Dir = f'{WD}/src'
+App = f'{App_Dir}/LLM-Completion.py'
+Output_Dir = f'{WD}/Output'
 app = Flask(__name__)
 
 
@@ -19,7 +21,7 @@ def index():
     if request.method == 'POST':
         Question = request.form['Question']
 # -- run
-#        NL2SQL(Question)
+        NL2SQL(Question)
 
 # -- historical
 #         result = subprocess.check_output(['python', 'lib/Completions.py -q', Question]).decode('utf-8')
@@ -34,12 +36,12 @@ def index():
     return render_template('input.html')
 
 def NL2SQL(Question):
-    result = subprocess.check_output([sys.executable, App_dir + "/Completions.py","-F","-q",Question])
+    result = subprocess.check_output([sys.executable, f'{App}' ,"-F","-q",Question])
     print(f'result = {result}')
 
 def Read_query_file():
     try:
-        Filename = Output_dir + '/Query.sql'
+        Filename = f'{Output_Dir}/Query.sql'
         with open(Filename, 'r') as output_file:
             #k = output_file.read()
             k = output_file.readlines()
@@ -51,7 +53,7 @@ def Read_query_file():
     
 def Read_results_file():
     try:
-        Filename = Output_dir + '/Results.xlsx'
+        Filename = f'{Output_Dir}/Results.xlsx'
        # df = pd.read_csv(Filename)
         df = pd.read_excel(Filename, sheet_name='Flask',parse_dates=True)
         print(f'df {df}')

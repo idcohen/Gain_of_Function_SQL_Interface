@@ -26,7 +26,7 @@ from ChatGPT_Messages.src.lib.lib_OpenAI_Embeddings import VDS, OpenAI_Embedding
 
 class GenAI_NL2SQL():
     def __init__(self, OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
-                  Token_Cost, DB, MYSQL_User, MYSQL_PWD, WD, VDSDB=None, VDSDB_Filename=None):
+                  Token_Cost, DB, MYSQL_USER, MYSQL_PWD, WD, VDSDB=None, VDSDB_Filename=None):
         self._LLM_Model = Model
         self._Embedding_Model = Embedding_Model
         self._Encoding_Base = Encoding_Base
@@ -35,7 +35,7 @@ class GenAI_NL2SQL():
         self._Token_Cost = Token_Cost
         self._OpenAI_API_Key = OPENAI_API_KEY
         self._DB = DB
-        self._MYSQL_Credentials = {'User':MYSQL_User,'PWD':MYSQL_PWD}
+        self._MYSQL_Credentials = {'User':MYSQL_USER,'PWD':MYSQL_PWD}
         self._WD = WD
         self.Set_OpenAI_API_Key()
         if VDSDB is not None:
@@ -66,6 +66,7 @@ class GenAI_NL2SQL():
                 top_p=1,
                 frequency_penalty=0,
                 presence_penalty=0
+#                stream=True
             )
             status = 0
         except openai.error.APIError as e:
@@ -100,7 +101,7 @@ class GenAI_NL2SQL():
         rtn = self._VDS.Search_VDS(Question_Emb, Similarity_Func = 'Cosine', Top_n=3)
         N_Shot_Examples = {'Question':rtn[1], 'Query':rtn[2]}
 
-    # Construct prompt
+      # Construct prompt
         Query, Status = self.Message_Query(Question, N_Shot_Examples = N_Shot_Examples, Verbose=Verbose, Debug=False)
         
         if Status == -100:

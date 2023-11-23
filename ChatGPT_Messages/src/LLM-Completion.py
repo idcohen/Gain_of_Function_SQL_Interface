@@ -97,7 +97,7 @@ if __name__ == '__main__':
     p.add_argument('-v', action='store_true', help=" Verbose Mode", default=False)
     p.add_argument('-F', action='store_true', help=" Flask Mode", default=False)
     p.add_argument('-T', action='store_true', help=" Test Mode", default=False)
-    p.add_argument('-I', action='store_true', help=" Interactive Mode", default=False))
+    p.add_argument('-I', action='store_true', help=" Interactive Mode", default=False)
     p.add_argument('Question_or_Embedding_Filename',  nargs='?', default=[None], type=str) 
    
     args = p.parse_args()
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # Model_Type = 'Instruct' # Instruct or Chat
     Model = "gpt-3.5-turbo"
     if args.q == True:
-        Question = args.Question_or_Embedding_Filename[0]
+        Question = args.Question_or_Embedding_Filename
         if Flask_mode == False:
             print(f'\nQuestion: {Question}\n')
         Query =  main(Question, Model, Req='Query', Flask_mode=Flask_mode, Verbose=Verbose)
