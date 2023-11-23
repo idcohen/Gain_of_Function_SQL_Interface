@@ -37,7 +37,7 @@ class GenAI_NL2SQL():
         self._DB = DB
         self._MYSQL_Credentials = {'User':MYSQL_USER,'PWD':MYSQL_PWD}
         self._WD = WD
-        self.Set_OpenAI_API_Key()
+      #  self.Set_OpenAI_API_Key()
         if VDSDB is not None:
             self._VDSDB = VDSDB
             self._VDS = VDS(VDSDB_Filename, Encoding_Base, Embedding_Model, Token_Cost, Max_Tokens) 
