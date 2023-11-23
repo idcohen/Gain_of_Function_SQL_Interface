@@ -100,13 +100,15 @@ class GenAI_NL2SQL():
         Query = ''
         df = pd.DataFrame()
 
-        # Prepare Message Template
+        # Set up - Prepare Message Template
         Status = self.Prepare_Message_Template(Verbose)
+        
         # Search for relevant examples
         if Use_N_Shot_Prompt:
             Status = self.GPT_Search_N_Shot_Examples(Question, Verbose)
             # Insert examples into Message list 
             Status = self.Append_N_Shot_Messages(Verbose)
+
         # Insert Question into Message list
         Status = self.Append_Queston(Question, Verbose=Verbose)
        

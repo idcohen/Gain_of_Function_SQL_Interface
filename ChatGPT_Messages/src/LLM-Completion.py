@@ -68,6 +68,7 @@ def main(Input=None, Model=None, Req=None, Flask_mode = False, Verbose=False, Di
             print(f'LLM Natural Language to SQL translator')
             print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
 
+        # Single Prompt version
         Query, df = GPT3.GPT_Chat(Question, Use_N_Shot_Prompt = True, QueryDB = True, 
                                   Display_DF_Rows = Display_DF_Rows, Update_VDS=Update_VDS, Prompt_Update=Prompt_Update, 
                                     Verbose = Verbose, Debug=False)
@@ -76,6 +77,9 @@ def main(Input=None, Model=None, Req=None, Flask_mode = False, Verbose=False, Di
             Fde = Flask_data_exchange(WD, Output_dir= Flask_output_dir)
             Fde.Write_query(Query, Query_filename)
             Fde.Output_results_df(df, Results_filename)
+
+        # for interactive mode
+        # create a version of GPT_Chat that is interactive loop through prompts 
 
         return(Query)
     
