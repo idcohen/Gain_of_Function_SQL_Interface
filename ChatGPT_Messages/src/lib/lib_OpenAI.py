@@ -95,7 +95,6 @@ class GenAI_NL2SQL():
                  Display_DF_Rows = 0, Update_VDS=True, Prompt_Update=True, 
                  Verbose = False, Debug=False):
 
-        Verbose = False
         # default values
         Query = ''
         df = pd.DataFrame()
@@ -309,4 +308,46 @@ class GenAI_NL2SQL():
         return Query, Status
 
 ##############################################################################    
-    
+# interactive chat session
+    def GPT_Interactive_Chat(self, Question, Use_N_Shot_Prompt = True, QueryDB = False, 
+                 Display_DF_Rows = 0, Update_VDS=True, Prompt_Update=True, Max_Cycles=100,
+                 Verbose = False, Debug=False):
+
+        # default values
+        Query = ''
+        df = pd.DataFrame()
+
+        # Prepare Message Template
+        Status = self.Prepare_Message_Template(Verbose)
+        # Search for relevant examples
+        if Use_N_Shot_Prompt:
+            Status = self.GPT_Search_N_Shot_Examples(Question, Verbose)
+            # Insert examples into Message list 
+            Status = self.Append_N_Shot_Messages(Verbose)
+        # Insert Question into Message list
+        Status = self.Append_Queston(Question, Verbose=Verbose)
+       
+        if Debug:
+            print(f' Message_Query: \n {self._Messages}')
+
+        Returned_Message, Status = self.GPT_ChatCompletion(Verbose)
+        Response = self.OpenAI_Response_Parser(Returned_Message)
+        if QueryDB:
+                Status, df = self.Query_DB(Response, Verbose)
+        
+        if Display_DF_Rows > 0:
+            print(f'Results of query: \n',df.head(Display_DF_Rows))
+
+        if Update_VDS:
+            if Prompt_Update:
+                rtn = ''
+                while rtn not in ('Y','N'):
+                    print(f'Add results to Vector Datastore DB? Y or N')
+                    rtn = input('Prompt> ')
+                if rtn == 'Y':
+                    self._VDS.Insert_VDS(Question=Question, Query=Query, Metadata='',Embedding=self._Question_Emb)
+            else:
+                self._VDS.Insert_VDS(Question=Question, Query=Query, Metadata='',Embedding=self._Question_Emb)
+    # Return Query
+        return Query, df
+        
