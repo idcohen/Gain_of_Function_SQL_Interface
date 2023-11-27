@@ -100,7 +100,7 @@ class GenAI_NL2SQL():
         Query = ''
         df = pd.DataFrame()
 
-        # Set up - Prepare Message Template
+        # Set up - Prepare Message Template - template is stored in self._Messages
         Status = self.Prepare_Message_Template(Verbose)
         
         # Search for relevant examples
