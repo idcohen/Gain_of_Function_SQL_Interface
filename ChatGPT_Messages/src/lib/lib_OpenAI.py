@@ -309,45 +309,67 @@ class GenAI_NL2SQL():
 
 ##############################################################################    
 # interactive chat session
-    def GPT_Interactive_Chat(self, Question, Use_N_Shot_Prompt = True, QueryDB = False, 
-                 Display_DF_Rows = 0, Update_VDS=True, Prompt_Update=True, Max_Cycles=100,
+    def GPT_Interactive_Chat(self, Use_N_Shot_Prompt = True, QueryDB = False, 
+                 Display_DF_Rows = 0, Prompt_Update=False,
+                 Update_VDS=False, Max_Exchanges = 10,
                  Verbose = False, Debug=False):
 
         # default values
         Query = ''
         df = pd.DataFrame()
 
-        # Prepare Message Template
-        Status = self.Prepare_Message_Template(Verbose)
-        # Search for relevant examples
-        if Use_N_Shot_Prompt:
-            Status = self.GPT_Search_N_Shot_Examples(Question, Verbose)
-            # Insert examples into Message list 
-            Status = self.Append_N_Shot_Messages(Verbose)
-        # Insert Question into Message list
-        Status = self.Append_Queston(Question, Verbose=Verbose)
+        i = 0
+        while (i < Max_Exchanges):
+            if i == 0:
+                # Initialize Message list
+                # Prepare Message Template
+                Status = self.Prepare_Message_Template(Verbose)
+            
+            # Prompt
+            # Reset Prompt
+            Prompt = ''
+            # Input prompt
+            # Empty prompts are not allowed
+            while len(Prompt) == 0:
+                Prompt = input('Prompt (or type Quit to exit)> : ')
+            if Prompt == 'Quit':
+                break
+
+            # Search for relevant examples
+            if Use_N_Shot_Prompt:
+                Status = self.GPT_Search_N_Shot_Examples(Prompt, Verbose)
+                # Insert examples into Message list 
+                Status = self.Append_N_Shot_Messages(Verbose)
+            # Insert Prompt into Message list
+            Status = self.Append_Queston(Prompt, Verbose=Verbose)
        
-        if Debug:
-            print(f' Message_Query: \n {self._Messages}')
+            if Debug:
+                print(f' Message_Query: \n {self._Messages}')
 
-        Returned_Message, Status = self.GPT_ChatCompletion(Verbose)
-        Response = self.OpenAI_Response_Parser(Returned_Message)
-        if QueryDB:
-                Status, df = self.Query_DB(Response, Verbose)
+            Returned_Message, Status = self.GPT_ChatCompletion(Verbose)
+            Response = self.OpenAI_Response_Parser(Returned_Message)
+
+            ### Addend Response to Message list
+            
+            if QueryDB:
+                    Status, df = self.Query_DB(Response, Verbose)
         
-        if Display_DF_Rows > 0:
-            print(f'Results of query: \n',df.head(Display_DF_Rows))
+            if Display_DF_Rows > 0:
+                print(f'Results of query: \n',df.head(Display_DF_Rows))
 
-        if Update_VDS:
-            if Prompt_Update:
-                rtn = ''
-                while rtn not in ('Y','N'):
-                    print(f'Add results to Vector Datastore DB? Y or N')
-                    rtn = input('Prompt> ')
-                if rtn == 'Y':
-                    self._VDS.Insert_VDS(Question=Question, Query=Query, Metadata='',Embedding=self._Question_Emb)
-            else:
-                self._VDS.Insert_VDS(Question=Question, Query=Query, Metadata='',Embedding=self._Question_Emb)
-    # Return Query
+            if Update_VDS:
+                if Prompt_Update:
+                    rtn = ''
+                    while rtn not in ('Y','N'):
+                        print(f'Add results to Vector Datastore DB? Y or N')
+                        rtn = input('Prompt> ')
+                    if rtn == 'Y':
+                        self._VDS.Insert_VDS(Question=Prompt, Query=Query, Metadata='',Embedding=self._Question_Emb)
+                else:
+                    self._VDS.Insert_VDS(Question=Prompt, Query=Query, Metadata='',Embedding=self._Question_Emb)
+        
+        # increment i
+            i += 1
+        # Return Query
         return Query, df
         

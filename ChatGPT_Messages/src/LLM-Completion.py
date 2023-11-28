@@ -47,35 +47,46 @@ def Instantiate_OpenAI_Class(Model= "gpt-3.5-turbo", VDSDB_Filename=None):
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
                         Token_Cost, DB, MYSQL_USER, MYSQL_PWD, WD, VDSDB, VDSDB_Filename)
 
-def main(Input=None, Model=None, Req=None, Flask_mode = False, Verbose=False, Display_DF_Rows=5):
+def main(Input=None, Model=None, Req=None, Interactive_Mode = False, Flask_Mode = False, 
+         Verbose=False, Display_DF_Rows=5):
     if Req == 'Query':
         GPT3 = Instantiate_OpenAI_Class(Model)
         
-        Question = Input
-# Update VDS
-        Update_VDS=True
-        Prompt_Update = True
-
-        if Flask_mode:  
+        if Interactive_Mode:
+            Update_VDS = False
             Prompt_Update = False
-            Verbose = False
-            Display_DF_Rows = 0
+            Query, df = GPT3.GPT_Interactive_Chat(Use_N_Shot_Prompt = True, 
+                                    QueryDB = True, Display_DF_Rows = Display_DF_Rows, 
+                                    Prompt_Update=Prompt_Update, 
+                                    Update_VDS=Update_VDS, Max_Exchanges = 10,
+                                        Verbose = Verbose, Debug=False)
+        else:
+            Question = Input
+    # Update VDS
+            Update_VDS=True
+            Prompt_Update = True
 
-        if Question is None:
-            Question = input('Prompt> Question: ')
+            if Flask_Mode:  
+                Prompt_Update = False
+                Verbose = False
+                Display_DF_Rows = 0
 
-        if Verbose:
-            print(f'LLM Natural Language to SQL translator')
-            print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
+            if Question is None:
+                Question = input('Prompt> Question: ')
 
-        Query, df = GPT3.GPT_Chat(Question, Use_N_Shot_Prompt = True, QueryDB = True, 
-                                  Display_DF_Rows = Display_DF_Rows, Update_VDS=Update_VDS, Prompt_Update=Prompt_Update, 
-                                    Verbose = Verbose, Debug=False)
+            if Verbose:
+                print(f'LLM Natural Language to SQL translator')
+                print(f'Using {GPT3._LLM_Model} set at temperature {GPT3._Temperature} \n')
 
-        if Flask_mode:
-            Fde = Flask_data_exchange(WD, Output_dir= Flask_output_dir)
-            Fde.Write_query(Query, Query_filename)
-            Fde.Output_results_df(df, Results_filename)
+            Query, df = GPT3.GPT_Chat(Question, Use_N_Shot_Prompt = True, QueryDB = True, 
+                                    Display_DF_Rows = Display_DF_Rows, Update_VDS=Update_VDS, 
+                                    Prompt_Update=Prompt_Update, 
+                                        Verbose = Verbose, Debug=False)
+
+            if Flask_Mode:
+                Fde = Flask_data_exchange(WD, Output_dir= Flask_output_dir)
+                Fde.Write_query(Query, Query_filename)
+                Fde.Output_results_df(df, Results_filename)
 
         return(Query)
     
@@ -102,25 +113,27 @@ if __name__ == '__main__':
     args = p.parse_args()
 
     Verbose = True if args.v == True else False
-    Flask_mode = True if args.F == True else False
-    Test_mode = True if args.T == True else False
-    Interactive_Mode = True if args.I == True else False
+    Flask_Mode = True if args.F == True else False
+    Test_Mode = True if args.T == True else False
 
     # Migration to Chatcompletion API for gpt3.5+ and gpt4 models
     # Model_Type = 'Instruct' # Instruct or Chat
     Model = "gpt-3.5-turbo"
     if args.q == True:
         Question = args.Question_or_Embedding_Filename
-        if Flask_mode == False:
+        if Flask_Mode == False:
             print(f'\nQuestion: {Question}\n')
-        Query =  main(Question, Model, Req='Query', Flask_mode=Flask_mode, Verbose=Verbose, Display_DF_Rows=5)
+        Query =  main(Question, Model, Req='Query', Flask_mode=True, Verbose=Verbose, Display_DF_Rows=5)
        # print(Query)
     elif args.E == True:
-        Filename = args.Question_Filename[0]
+        Filename = args.Question_Filename
         print(Filename)
         Model = "text-embedding-ada-002"
         rtn = main(Filename, Model, Req='Embedding',Verbose=args.V)
-    elif Test_mode:
+    elif args.I == True:
+        Question = None
+        Query = main(Question, Model, Req='Query', Interactive_Mode = True, Verbose=Verbose, Display_DF_Rows=5)
+    elif Test_Mode:
         pass
     else:
         print('unsupported option')
