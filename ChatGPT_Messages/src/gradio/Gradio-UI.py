@@ -4,10 +4,15 @@ import os
 import openai
 from sqlalchemy import exc, create_engine, text as sql_text
 from dotenv import load_dotenv
+import argparse
 import gradio as gr
-import sys
+#import sys
 
 WD = "/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT_Messages"
+
+Message_Template_Filename = f'{WD}/Message_templates/Template_MySQL-1.txt'
+VDSDB_Filename =  f"{WD}/Vector_DB/Question_Query_Embeddings-1.txt"
+VDSDB = "Dataframe"
 
 # for local modules
 # sys.path.append(WD)
@@ -29,11 +34,8 @@ Temperature = 0
 Token_Cost = {"gpt-3.5-turbo-instruct":{"Input":0.0015/1000,"Output":0.002/1000},
                 "gpt-3.5-turbo":{"Input":0.001/1000,"Output":0.002/1000},
                 "text-embedding-ada-002":{"Input":0.0001/1000, "Output":0.0001/1000}}
-WD = "/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT_Messages"
 
-Message_Template_Filename = f'{WD}/Message_templates/Template_MySQL.txt'
-VDSDB = "Dataframe"
-VDSDB_Filename =  f"{WD}/Vector_DB/Question_Query_Embeddings-1.txt"
+
 
 def predict(Message, Verbose = False, Debug=True):
     if not hasattr(predict, "counter"):
@@ -81,13 +83,21 @@ def predict(Message, Verbose = False, Debug=True):
     predict.counter += 1
     return Response, df
 
-demo = gr.Interface(
-    fn=predict,
-    inputs=["text"],
-    outputs=["text","dataframe"],
-)
 
-demo.launch()
+    
+if __name__ == '__main__':
+    p = argparse.ArgumentParser('Natural Language to SQL')
+    p.add_argument('--Share', action='store_true', help=" Invoke Public Link ", default=False)
+
+    args = p.parse_args()
+
+    demo = gr.Interface(
+        fn=predict,
+        inputs=["text"],
+        outputs=["text","dataframe"],
+    )
+
+    demo.launch(share=args.Share) 
 
 
 ################################################################
