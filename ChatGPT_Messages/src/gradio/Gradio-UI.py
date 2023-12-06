@@ -36,8 +36,7 @@ Token_Cost = {"gpt-3.5-turbo-instruct":{"Input":0.0015/1000,"Output":0.002/1000}
                 "text-embedding-ada-002":{"Input":0.0001/1000, "Output":0.0001/1000}}
 
 
-
-def predict(Message, Verbose = False, Debug=True):
+def predict(Message, Verbose = False, Debug=False):
     if not hasattr(predict, "counter"):
         predict.counter = 0
     if not hasattr(predict, "Message_History"):
@@ -90,14 +89,22 @@ if __name__ == '__main__':
     p.add_argument('--Share', action='store_true', help=" Invoke Public Link ", default=False)
 
     args = p.parse_args()
+    # Dataframe styles
+    #styler = df.style.highlight_max(color = 'lightgreen', axis = 0)
 
     demo = gr.Interface(
         fn=predict,
-        inputs=["text"],
-        outputs=["text","dataframe"],
+        inputs = gr.Textbox(lines=4, placeholder="What is ...",label="Question"),
+#        inputs=["text"],
+ #       outputs=["text","dataframe"],
+   #     outputs = ["text",gr.Dataframe()],
+       outputs = [gr.Textbox(lines=4,label='Query',show_copy_button=True),gr.Dataframe(label="Result")],
+        title="NL2SQL",
+        description="Natural Language to SQL User Interface"
+        ,allow_flagging="never"
     )
 
-    demo.launch(share=args.Share) 
+    demo.launch(share=args.Share, show_api=False, inbrowser=True) 
 
 
 ################################################################
