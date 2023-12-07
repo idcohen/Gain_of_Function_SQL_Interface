@@ -71,7 +71,7 @@ def respond(message, chat_history, Verbose=False, Debug=False):
     response = openai.ChatCompletion.create(
         model='gpt-3.5-turbo',
         messages= respond.Message_History,
-        temperature=1.0
+        temperature=0
       #  stream=True
     )
 
