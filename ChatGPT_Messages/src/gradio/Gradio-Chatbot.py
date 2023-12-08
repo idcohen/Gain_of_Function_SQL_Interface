@@ -17,7 +17,7 @@ from lib_OpenAI_Embeddings import VDS
 WD = "/Users/dovcohen/Documents/Projects/AI/NL2SQL/ChatGPT_Messages"
 
 Message_Template_Filename = f'{WD}/Message_templates/Template_MySQL-1.txt'
-VDSDB_Filename =  f"{WD}/Vector_DB/Question_Query_Embeddings-1.txt"
+VDSDB_Filename =  f"{WD}/Vector_DB/Question_Query_Embeddings-1.txt" 
 VDSDB = "Dataframe"
 
 

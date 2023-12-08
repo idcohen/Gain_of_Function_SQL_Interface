@@ -5,7 +5,7 @@ class VDS():
     def __init__(self, Filename):
         self._DBFilename_Load = Filename
 
-    def Load_VDS_DF(self, Verbose=False):
+    def Load_VDS_DF(self, Verbose=True):
         # for version 1, import dataframe
         try:
             df = pd.read_excel(self._DBFilename, sheet_name='VDS')
@@ -18,7 +18,7 @@ class VDS():
 
         return df
 
-    def Store_VDS_DF(self, df, Verbose=False):
+    def Store_VDS_DF(self, df, Verbose=True):
         try:
             df.to_excel(self._DBFilename,sheet_name='VDS',index=False, header=True)
             if Verbose:

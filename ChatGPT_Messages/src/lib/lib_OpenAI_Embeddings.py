@@ -53,6 +53,7 @@ class OpenAI_Embeddings():
 # Retrieve Embeddings for DF columne -- assumes the existance of a Question column 
     def Get_Embeddings_DF_Column(self, df, Embedding_LLM = 'OpenAI', Verbose=False):
         if Embedding_LLM=='OpenAI':
+            print(f'df {df}')
             df['Embedding'] = df.Question.apply(lambda x: self.OpenAI_Get_Embedding(x))
         return 0
 
@@ -65,7 +66,7 @@ class OpenAI_Embeddings():
 #############################################################################
 # Calculate Embeddings for DF assumes      
 class VDS(OpenAI_Embeddings):
-    def Load_VDS_DF(self, sep='|', Sheetname = 'VDS', Verbose=False, Debug=False):
+    def Load_VDS_DF(self, sep='|', Sheetname = 'VDS', Verbose=True, Debug=False):
         Suffix = self._DBFilename[-3:]
         if Suffix == 'txt':
             try:
@@ -164,7 +165,7 @@ class VDS(OpenAI_Embeddings):
 
         return 0
     
-    def Retrieve_Embeddings_DF_Column(self, Verbose=False):
+    def Retrieve_Embeddings_DF_Column(self, Verbose=True):
         # Assumption Vector Datastore is a pandas dataframe
         if Verbose:
             print("Retrieve_Embeddings_DF_Column: Get_VDS_Embeddings_DF")
@@ -172,10 +173,10 @@ class VDS(OpenAI_Embeddings):
        # rtn = self.Get_Embeddings_DF
         if Verbose:
             print(f'Retrieve_Embeddings_DF_Column: after embedding call {self._VDS_DF.head(2)}')        
-
+            print(f'Load_VDS_DF imported {self._VDS_DF.shape[0]} rows from {self._DBFilename}')  
         if Verbose:
             print("Retrieve_Embeddings_DF_Column: Store_VDS_DF")
-        rtn = self.Store_VDS_DF(Format='Pipe',Verbose=True)
+        rtn = self.Store_VDS_DF(Format = 'txt', Delimator = '|',Verbose=True)
 
         return 0
     

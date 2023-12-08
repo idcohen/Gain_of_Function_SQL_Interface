@@ -42,6 +42,8 @@ def Instantiate_OpenAI_Class(Model= "gpt-3.5-turbo", VDSDB_Filename=None):
 
     if VDSDB_Filename is None:  
         VDSDB_Filename = f"{WD}/Vector_DB/Question_Query_Embeddings-1.txt"
+    else:
+        VDSDB_Filename = f"{WD}/Vector_DB/{VDSDB_Filename}"
 
     #Instantiate GenAI_NL2SQL Object
     return GenAI_NL2SQL(OPENAI_API_KEY, Model, Embedding_Model, Encoding_Base, Max_Tokens, Temperature, \
@@ -111,7 +113,7 @@ if __name__ == '__main__':
     p.add_argument('Question_or_Embedding_Filename',  nargs='?', default=[None], type=str) 
    
     args = p.parse_args()
-
+    
     Verbose = True if args.v == True else False
     Flask_Mode = True if args.F == True else False
     Test_Mode = True if args.T == True else False
@@ -126,10 +128,10 @@ if __name__ == '__main__':
         Query =  main(Question, Model, Req='Query', Flask_mode=True, Verbose=Verbose, Display_DF_Rows=5)
        # print(Query)
     elif args.E == True:
-        Filename = args.Question_Filename
+        Filename = args.Question_or_Embedding_Filename
         print(Filename)
         Model = "text-embedding-ada-002"
-        rtn = main(Filename, Model, Req='Embedding',Verbose=args.V)
+        rtn = main(Filename, Model, Req='Embedding',Verbose=Verbose)
     elif args.I == True:
         Question = None
         Query = main(Question, Model, Req='Query', Interactive_Mode = True, Verbose=Verbose, Display_DF_Rows=5)
